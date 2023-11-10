@@ -27,3 +27,7 @@ To run:
 ./ABC_SLIM.sh SETTINGS.sh
 
 Ancient DNA metadata to define demography and run simulations can be found in METADATA/
+
+Expected output: We provide an expected output when running ./ABC_SLIM.sh SETTINGS.sh for the pre-defined parameters in the shared files and the metadata provided in METADATA
+The ouptut is for 405 simulations each run on two separate jobs
+Software requirements: SLiM v3, R (+ dplyr package), perl
