@@ -20,7 +20,7 @@ R code for estimating selection parameters using ABC are provided in https://git
 
 
 
-Performing simulations (hierarchical file structure):
+On performing simulations (hierarchical file structure):
 Read 'ABC_SLIM.sh' for details on running simulations
 
 Simulation parameters are defined in SETTINGS.sh (e.g., number of jobs and number of simulations per job). Check SETTINGS.sh file for full list of pre-defined parameters.
