@@ -67,8 +67,8 @@ submit_mainscript="submit_ESTIMATION.sh"
 					
 		echo " "
 		echo "cd  $FINALOUTPUT/JOB_$TASK_ID"
-		echo "module load R/4.1.0"
-		echo "R_LIBS_USER=/pasteur/zeus/projets/p02/IGSR/GASPARD/Rlibraries/4.1.0/; export R_LIBS_USER"
+		## echo "module load R/4.1.0" ## here load R
+		## echo "R_LIBS_USER=~/Rlibraries/4.1.0/; export R_LIBS_USER" ## also load required libraries
 					
 		echo " "
 		echo "perl run_slim3.pl ${NSIM} ${DEMOGRAPHY} ${thresQuality} ${GenerationTimeSpan} ${StartPulse1} ${StopPulse1} ${StartPulse2} ${StopPulse2} ${SlidingWindow} ${WindowLength} ${FullFileName} ${NameSource1} ${NameSource2} ${NameAge} ${NameSNP_hits} ${NameSubjectID}"
