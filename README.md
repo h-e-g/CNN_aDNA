@@ -13,6 +13,7 @@ Code was written in SLiM and uses a well-established European demography for the
 Estimation:
 
 ABC and CNN estimation of selection strength (s) and time of onset of selection (T) are conducted using R
+
 R code for estimating selection parameters using ABC are provided in https://github.com/h-e-g/SLiM_aDNA_selection/
 
 
