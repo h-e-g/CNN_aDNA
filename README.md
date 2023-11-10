@@ -16,6 +16,14 @@ ABC and CNN estimation of selection strength (s) and time of onset of selection 
 
 R code for estimating selection parameters using ABC are provided in https://github.com/h-e-g/SLiM_aDNA_selection/
 
+Estimation is performed using as input data simulated data and real SNP data. 
+
+Simulated data is a matrix file where rows represent different simulations and columns carrier status {0,1} of a simulated sample; see OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_1/FreqaDNA_tmp.txt. This matrix is generated as explained below.
+
+Real data is genotype data from ancient samples formatted exactly as simulated data. As a test the first row of OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_2/FreqaDNA_tmp.txt can be used as a real SNP to estimate selection using simulated data from OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_1/FreqaDNA_tmp.txt
+
+
+
 
 
 
