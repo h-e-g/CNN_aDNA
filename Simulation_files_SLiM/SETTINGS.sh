@@ -7,8 +7,8 @@
 ## 3	- 	"submit_mainscript" file : copies softwares and files to be used in the simulation process to the folders (see above) and run parameter selection (call of draw_parameter.pl), which randomly selects parameters according to the defined ranges and includes them in the demographic model, which is run by SLiM v3, and frequency estimation (call of run_slim3.pl) file, which runs the demographic model (call of slim) and extracts frequencies at the different epochs.
 ## 3	-   Parameters chosen with draw_parameter.pl are saved in parameters.txt (one simulation by row) and frequencies (one simulation by row) extracted with run_slim3.pl to FreqaDNA_tmp.txt
 
-WORK_DIR="/pasteur/zeus/projets/p02/IGSR/GASPARD/GUILLAUME_CNN/GITHUB/Files_For_Slim/"
-DIR_LOG="/pasteur/zeus/projets/p02/IGSR/GASPARD/GUILLAUME_CNN/GITHUB/Files_For_Slim/logs"
+WORK_DIR="~/Files_For_Slim/"
+DIR_LOG="~/Files_For_Slim/logs"
 mkdir -p ${DIR_LOG}
 ## FILES TO BE USED FOR PERFORMING SIMULATIONS
 MASTER_FILE="ABC_SLIM_submissionEurPop.sh"
