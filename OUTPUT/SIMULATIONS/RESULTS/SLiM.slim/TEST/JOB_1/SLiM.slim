@@ -1,0 +1,1398 @@
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+////////////////// 									INITIALIZE					   				//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+
+initialize() {
+	initializeMutationRate(0); // Only one position is tracked that should not mutate, so mutation rate is set to 0
+	initializeRecombinationRate(0); // as we are tracking only one position recombination rate is useless
+	
+	// Mutation types (for selection and ancestry markers)
+	initializeMutationType("m1", 0.5, "f", 0.0); // Basic mutation type
+	initializeMutationType("m2",  0.5, "f", 0); // Tracked mutation type
+	
+	// Markers are used to estimate proportions of Steppe and Anatolian ancestry in the admixed EUR population.
+	initializeMutationType("m4", 0.5, "f", 0.0); // Marker mutation for ancestry MDE (middle eastern). All individuals of pop4 (p4) will carry this marker mutation.
+	initializeMutationType("m5", 0.5, "f", 0.0); // Marker mutation for ancestry CAS (central asian). All individuals of pop5 (p5) will carry this marker mutation.
+	
+	// To not lose information of the marker or selected mutation if reaches fixation, one can avoid substitution.
+	m2.convertToSubstitution = F; 
+	m4.convertToSubstitution = F;
+	m5.convertToSubstitution = F;
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, 2);	
+}
+
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+////////////////// CREATE ANCESTRAL POPULATION AND ADD ALL CONSTANTS OF THE MODEL   //////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+
+
+// Expand the African population to 14474 (Gravel)
+// Start the simulation 100,000 years ago
+// Because of rescaling simulate 400 generations
+1 { 
+	sim.addSubpop("p1", 1447); 	
+	
+	// Define constants to use later in the script	
+	// Coverage at each generation is obtained from the metadata file
+	// Every line of "NbrIndsBinsFinal.txt" has the number of individuals per generation to sample
+	Coverages=readFile("NbrIndsBinsFinal.txt");
+	CoveragesInteger=NULL;
+	for (line in Coverages)
+	{	
+		CoveragesInteger=c(CoveragesInteger,asInteger(line));
+	}
+	
+	
+	// Either obtain a simulated variant arising more than 100,000 years ago with its simulated AF or make it appear over the last 100,000 years ago
+	if($USEAFS==1){
+		AFS=readFile("/pasteur/zeus/projets/p02/IGSR/GASPARD/DATING_SELECTION/ZEUS/TMP_working_gaspard/SIMULATIONS/our_model/FREQ_FILE_allsim_kept_AFS1M-100K_nozeros.txt");
+		AFS2=asFloat(AFS[$AFSTOCHANGE]);
+		if(AFS2==0){
+			cat("Absent \n");
+	 		sim.simulationFinished();
+		}else{
+			NumberPeople = asInteger(round(AFS2*(1447)));
+			target = sample(p$SELPOP.genomes, NumberPeople);
+            target.addNewDrawnMutation(m2, 1);
+		}
+	}
+		
+		
+	// Anatolian and Steppe ancestry proportions per generation extracted from observed data
+	// Use these values to simulate as close as possible to real data
+	// This data is generated while reading metadata and running Rscript
+	SamplingBiasAnat=readFile("SortedAnatPropsGeneration.txt");
+    SamplingBiasAnatFloat=NULL;    
+    for (line in SamplingBiasAnat)
+    {
+    	SamplingBiasAnatFloat=c(SamplingBiasAnatFloat,asFloat(line));
+    }
+    
+    SamplingBiasSteppe=readFile("SortedSteppePropsGeneration.txt");
+    SamplingBiasSteppeFloat=NULL;    
+    for (line in SamplingBiasSteppe)
+    {
+    	SamplingBiasSteppeFloat=c(SamplingBiasSteppeFloat,asFloat(line));
+    }    
+                    
+    // Define vectors of carriers with the read data             
+    defineConstant("SamplingBiassAnat",SamplingBiasAnatFloat);
+    defineConstant("SamplingBiassSteppe",SamplingBiasSteppeFloat);
+    defineConstant("GenSampleSizesInds",CoveragesInteger); // Sample sizes to sample per generation			 	
+	 defineConstant("GenSample",asInteger(400-rev(seq(0,$GENERATIONLENGTH*(length(GenSampleSizesInds)-1),
+	 $GENERATIONLENGTH))/250)); // Generations at which individuals are sampled       
+}
+        
+    
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////    
+////////////////// 	ADD NEW SELECTED MUTATION (IF OVER THE LAST 100,000 years)
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+
+$SELMUT_age late() { 
+   target = sample(p$SELPOP.genomes, 1); // sample one individual
+   target.addNewDrawnMutation(m2, 1); // include the mutation to that one individual
+}
+             
+  
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						////////////////// 	
+////////////////// 			DIVERGENCE TIMES BETWEEN OLD POPULATIONS
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						////////////////// 
+
+
+// Split non-Africans from Africans and set up migration between them
+// Make it vary from 60 to 80 kya (based on Bergstrom Science 2020 paper)
+// NE Eurasia from 2000 to 3000 (so 200-300 in the model)
+$SPLITAFR {	
+	sim.addSubpopSplit("p2", $NEEURASIA, p1); 
+	p1.setMigrationRates(c(p2), c(9.3e-4)); 
+	p2.setMigrationRates(c(p1), c(15e-4)); 
+}
+
+// Split East and West Eurasians
+// Make it vary from 35 to 45 kya (based on Bergstrom Science 2020 paper)
+// NE Europe or East Asia from 3000 to 4000 (so 300-400 in the model)
+$SPLITEAS {	
+	sim.addSubpopSplit("p3",$NEEURORASI, p2);   
+	p2.setSubpopulationSize($NEEURORASI); // reduce European size 
+	
+	// Set migration rates for the rest of the simulation
+	p1.setMigrationRates(c(p2, p3), c(5.1e-5, 1.44e-5)); 
+	p2.setMigrationRates(c(p1, p3), c(2.5e-4, 5.74e-5)); 
+	p3.setMigrationRates(c(p1, p2), c(0.78e-4, 6.38e-5)); 
+}
+
+
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							////////////////// 
+////////////////// 										FITNESS
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							////////////////// 
+
+//// INCLUDE SELECTION
+//// From onset of selection to the present 
+$ONSETSEL: fitness(m2) {
+	if(sim.generation >= $ONSETSEL) {	
+      if(homozygous)
+      	return 1.0 + ($SEL_coef)*10;
+      else
+          return 1.0 + 0.5 * ($SEL_coef)*10;
+	}else{
+		return 1.0;
+	}
+}
+
+
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							////////////////// 
+////////////////// SPLIT BETWEEN CENTRAL ASIANS ANATOLIANS AND COMMON WESTERN EUROPEANS
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							////////////////// 
+
+
+
+// Assess the split between middle eastern, central asian and european populations (based on Bergstrom 2020 paper around 15 and 20 kya)
+
+// I allow for uncertainty into which population diverged first (CAS or MDE)
+// SPLITMIN is the oldes time for divergence between one of these 2 pops and my pop 2
+// SPLITMAX indicates the most recent divergence time
+// SPLITANAT indicates the split for MDE (p4 here)
+// SPLITSTEPPE indicates that of CAS (p5 here)
+$SPLITMIN late() {
+	if($SPLITANAT <= $SPLITSTEPPE){
+		 defineConstant("p2count",p2.individualCount);
+	  	 sim.addSubpopSplit("p4",asInteger(p2count), p2);
+
+        // Set migration rates for the rest of the simulation
+        p1.setMigrationRates(c(p4), c(5.1e-5));
+        p2.setMigrationRates(c(p4), c(5.74e-5));
+        p3.setMigrationRates(c(p4), c(6.38e-5));
+        p4.setMigrationRates(c(p1,p2,p3), c(2.5e-4,6.38e-5,5.74e-5));
+        p4.genomes.addNewMutation(m4,0.0,2); 
+    }else{
+		  defineConstant("p2count",p2.individualCount);
+        sim.addSubpopSplit("p5",asInteger(p2count), p2);
+        //p2.setSubpopulationSize(1000);
+
+        // Set migration rates for the rest of the simulation
+        p1.setMigrationRates(c(p5), c(5.1e-5));
+        p2.setMigrationRates(c(p5), c(5.74e-5));
+        p3.setMigrationRates(c(p5), c(6.38e-5));
+        p5.setMigrationRates(c(p1,p2,p3), c(2.5e-4,6.38e-5,5.74e-5));
+        p5.genomes.addNewMutation(m5,0.0,2);
+	 }
+}
+
+$SPLITMAX late() {
+
+	if($SPLITANAT <= $SPLITSTEPPE){
+		defineConstant("p2count2",p2.individualCount);
+      sim.addSubpopSplit("p5",asInteger(p2count2) , p2);
+
+      // Set migration rates for the rest of the simulation
+      p1.setMigrationRates(c(p5), c(5.1e-5));
+      p2.setMigrationRates(c(p5), c(5.74e-5));
+      p3.setMigrationRates(c(p5), c(6.38e-5));
+      p4.setMigrationRates(c(p5), c(6.38e-5));
+      p5.setMigrationRates(c(p1,p2,p3,p4), c(2.5e-4,6.38e-5,5.74e-5,6.38e-5));
+      p5.genomes.addNewMutation(m5,0.0,2);
+   }else{
+		defineConstant("p2count2",p2.individualCount);
+      sim.addSubpopSplit("p4",asInteger(p2count2) , p2);
+
+      // Set migration rates for the rest of the simulation
+      p1.setMigrationRates(c(p4), c(5.1e-5));
+      p2.setMigrationRates(c(p4), c(5.74e-5));
+      p3.setMigrationRates(c(p4), c(6.38e-5));
+      p5.setMigrationRates(c(p4), c(6.38e-5));
+      p4.setMigrationRates(c(p1,p2,p3,p5), c(2.5e-4,6.38e-5,5.74e-5,6.38e-5));
+      p4.genomes.addNewMutation(m4,0.0,2); 
+    }
+}
+
+
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							////////////////// 
+////////////////// 							PULSE OF MIGRATIONS
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							////////////////// 
+
+
+	$PULSE1 {
+        p2.setMigrationRates(c(p4), $MIGRATEANAT);
+    }
+    
+    $PULSES1 {
+        p2.setMigrationRates(c(p4), c(5.74e-5));
+    }
+        //5,000 years ago, second pulse from Steppe ancestry
+    $PULSE2 {
+	
+        p2.setMigrationRates(c(p5), $MIGRATESTEPPE);
+    }
+    $PULSES2 {
+        p2.setMigrationRates(c(p5), c(5.74e-5));
+    }
+
+
+
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							////////////////// 
+////////////////// 					POPULATION EXPONENTIAL GROWTH
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							//////////////////
+//////////////////																							////////////////// 
+
+
+// Set up exponential growth in Europe and East Asia
+// Where N(0) is the base subpopulation size and t = gen - 57080:
+// N(Europe) should be int(round(N(0) * e^(0.0038*t)))
+// N(East Asia) should be int(round(N(0) * e^(0.0048*t)))
+
+// Exponential growth starting 25,000 years ago
+298:400 {  
+	 t = sim.generation - 298;
+	 if (t==0){
+	 	p2_size = p2.individualCount;
+    	p3_size = p3.individualCount;
+	 	defineConstant("init2",p2.individualCount);
+    	defineConstant("init3",p3.individualCount);
+	 }else{
+	 	p2_size = round((init2 * 10 * exp(((0.0038*10*(t)-log(10))/(t)) * t)));
+	 	p3_size = round((init3 * 10 * exp(((0.0048*10*(t)-log(10))/(t)) * t)));
+	 }
+	 print(p2_size+"\n");
+	 p2.setSubpopulationSize(asInteger(p2_size));
+	 p3.setSubpopulationSize(asInteger(p3_size));
+}
+
+
+$SPLITANAT5708:400 {
+	t = sim.generation - 298;
+	if (sim.generation==$SPLITANAT5708){
+		p4_size = p4.individualCount;
+		defineConstant("init4",p4.individualCount);
+	}else{
+		p4_size = round((init4 * 10 * exp(((0.0038*10*(t)-log(10))/(t)) * t)));
+	}
+	p4.setSubpopulationSize(asInteger(p4_size));
+}
+
+$SPLITSTEPPE5708:400 {
+	t = sim.generation - 298;
+	if (sim.generation==$SPLITSTEPPE5708){
+		p5_size = p5.individualCount;
+		defineConstant("init5",p5.individualCount);
+	}else{
+		p5_size = round((init5 * 10 * exp(((0.0038*10*(t)-log(10))/(t)) * t)));
+	}
+	p5.setSubpopulationSize(asInteger(p5_size));
+}
+
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////    
+////////////////// 								aDNA SAMPLING 
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+
+260:400 late() {
+	
+    if(any(GenSample == sim.generation)){
+        myGen = which(GenSample == sim.generation);
+        outGen = (400-sim.generation)*250;
+        mut = sim.mutationsOfType(m2);
+        					
+        if(GenSampleSizesInds[myGen]>0){
+                                	
+            MySampleIndsTmp =  sample(p2.individuals, GenSampleSizesInds[myGen]).genomes;                  	
+                                	
+ 
+ 
+ 	 		// WHEN BOTH PULSES HAVE HAPPENED
+	 		
+	 		if(sim.generation >= $PULSE1 & 
+	 		sim.generation >= $PULSE2) {
+	 			
+	 			
+	 			DATA=p2.individuals.genomes;
+	 			
+	 			// Genotypes for Anat marker
+	 			M=matrix(DATA.containsMarkerMutation(m4,2)[0:(length(DATA.containsMarkerMutation(m4,2))-1)],nrow=asInteger(length(DATA.containsMarkerMutation(m4,2))/2),byrow=T);
+	 			M2=t(apply(M,0, "c(sum(applyValue[0]),sum(applyValue[1]));"));
+	 			M3=apply(M,0, "c(sum(c(applyValue[0],applyValue[1])));");
+	 			M=cbind(M2,M3);
+	 			
+	 			// Genotypes for Steppe marker
+	 			Msteppe=matrix(DATA.containsMarkerMutation(m5,2)[0:(length(DATA.containsMarkerMutation(m5,2))-1)],nrow=asInteger(length(DATA.containsMarkerMutation(m5,2))/2),byrow=T);
+	 			Msteppe2=t(apply(Msteppe,0, "c(sum(applyValue[0]),sum(applyValue[1]));"));
+	 			Msteppe3=apply(Msteppe,0, "c(sum(c(applyValue[0],applyValue[1])));");
+	 			Msteppe=cbind(Msteppe2,Msteppe3);
+	 			
+	 			// IF ANATOLIAN ANCESTRY IS BIGGER THAN STEPPE I START SELECTING ANATOLIAN SAMPLES
+	 			
+	 			if(SamplingBiassAnat[myGen] >=SamplingBiassSteppe[myGen]) {
+	 				 			
+	 				
+	 				
+	 				// TO MAKE IT EASIER I WILL PREFERENTIALLY SELECT INDIVIDUALS WITH ANATOLIAN AND STEPPE MARKER AT THE SAME TIME
+	 				
+	 				AnatsHoms=which(M3==2);		
+	 				AnatsHetsBoth=which(M3==1 & Msteppe3==1);
+	 				AnatsHets=which(M3==1 & Msteppe3==0);
+	 				AnatsHetsTogether=c(AnatsHetsBoth,AnatsHets);
+	 				
+	 				Others=which(M3==0 & Msteppe3==0);
+	 				AnatInds=NULL;
+	 				NbrHoms=asInteger(round((SamplingBiassAnat[myGen])*(SamplingBiassAnat[myGen])*GenSampleSizesInds[myGen]));
+	 				NbrHets=asInteger(round(2*(SamplingBiassAnat[myGen])*(1-SamplingBiassAnat[myGen])*GenSampleSizesInds[myGen]));
+	 				if(NbrHoms<=length(AnatsHoms) & NbrHets<=(length(AnatsHets)+length(AnatsHetsBoth))){
+	 					muestraHoms=sample(AnatsHoms,NbrHoms);
+	 					if(NbrHets<=length(AnatsHetsBoth) & NbrHets<=SamplingBiassSteppe[myGen]*(2*GenSampleSizesInds[myGen])){
+	 						muestraHets=sample(AnatsHetsBoth,NbrHets);
+	 					}else if(NbrHets<=length(AnatsHetsBoth) & NbrHets>SamplingBiassSteppe[myGen]*(2*GenSampleSizesInds[myGen])){
+	 						limit=asInteger(floor(SamplingBiassSteppe[myGen]*(2*GenSampleSizesInds[myGen])));
+	 						if((NbrHets-limit)<=length(AnatsHets)){
+	 							muestraHetsBoth=sample(AnatsHetsBoth,limit);
+	 							muestraHetsSingle=sample(AnatsHetsBoth,NbrHets-limit);
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}else{
+	 							muestraHets=sample(AnatsHetsBoth,NbrHets);
+	 						}
+	 						
+	 					}else{
+	 						muestraHetsBoth=sample(AnatsHetsBoth,length(AnatsHetsBoth));
+	 						muestraHetsSingle=sample(AnatsHets,NbrHets-length(AnatsHetsBoth));
+	 						muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 					}
+	 					
+	 					AnatInds=c(muestraHoms,muestraHets);
+
+	 					if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+1/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+1/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & (NbrHets+1)<=(length(AnatsHets)+length(AnatsHetsBoth)) & (NbrHoms+NbrHets+1)<=GenSampleSizesInds[myGen]){
+	 						muestraHoms=sample(AnatsHoms,NbrHoms);
+	 						if((NbrHets+1)<=length(AnatsHetsBoth)){
+	 							muestraHets=sample(AnatsHetsBoth,NbrHets+1);
+	 						}else{
+	 							muestraHetsBoth=sample(AnatsHetsBoth,length(AnatsHetsBoth));
+	 							muestraHetsSingle=sample(AnatsHets,NbrHets-length(AnatsHetsBoth)+1);
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}
+	 						AnatInds=c(muestraHoms,muestraHets);
+
+	 					}
+	 					else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & (NbrHoms+1)<=length(AnatsHoms) & (NbrHoms+NbrHets+1)<=GenSampleSizesInds[myGen]){
+	 						muestraHoms=sample(AnatsHoms,NbrHoms+1);
+	 						if(NbrHets<=length(AnatsHetsBoth)){
+	 							muestraHets=sample(AnatsHetsBoth,NbrHets);
+	 						}else{
+	 							muestraHetsBoth=sample(AnatsHetsBoth,length(AnatsHetsBoth));
+	 							muestraHetsSingle=sample(AnatsHets,NbrHets-length(AnatsHetsBoth));
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}
+	 					
+	 						AnatInds=c(muestraHoms,muestraHets);
+	 					}
+	 					else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & (NbrHets+2)<=(length(AnatsHets)+length(AnatsHetsBoth)) & (NbrHoms+1)>length(AnatsHoms) & (NbrHoms+NbrHets+2)<=GenSampleSizesInds[myGen]){
+	 						muestraHoms=sample(AnatsHoms,NbrHoms);
+	 						if((NbrHets+2)<=length(AnatsHetsBoth)){
+	 							muestraHets=sample(AnatsHetsBoth,NbrHets+2);
+	 						}else{
+	 							muestraHetsBoth=sample(AnatsHetsBoth,length(AnatsHetsBoth));
+	 							muestraHetsSingle=sample(AnatsHets,NbrHets-length(AnatsHetsBoth)+2);
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}
+	 						AnatInds=c(muestraHoms,muestraHets);
+	 					}
+	 					else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & (NbrHets+1)<=(length(AnatsHets)+length(AnatsHetsBoth)) & (NbrHoms+1)<=length(AnatsHoms) & (NbrHoms+NbrHets+2)<=GenSampleSizesInds[myGen]){
+	 						muestraHoms=sample(AnatsHoms,NbrHoms+1);
+	 						if((NbrHets+1)<=length(AnatsHetsBoth)){
+	 							muestraHets=sample(AnatsHetsBoth,NbrHets+1);
+	 						}else{
+	 							muestraHetsBoth=sample(AnatsHetsBoth,length(AnatsHetsBoth));
+	 							muestraHetsSingle=sample(AnatsHets,NbrHets-length(AnatsHetsBoth)+1);
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}
+	 						AnatInds=c(muestraHoms,muestraHets);
+	 					}else{
+	 					}
+					}else if(NbrHoms<=length(AnatsHoms) & NbrHets>(length(AnatsHets)+length(AnatsHetsBoth))){
+	 					muestraHoms=sample(AnatsHoms,NbrHoms);
+	 					muestraHets=sample(AnatsHets,length(AnatsHets)+length(AnatsHetsBoth));
+	 					RemainingFreq=SamplingBiassAnat[myGen]-(2*NbrHoms+length(AnatsHets)+length(AnatsHetsBoth))/(2*GenSampleSizesInds[myGen]);
+	 					minimo=abs(RemainingFreq-seq(0,min(length(AnatsHoms)-NbrHoms,GenSampleSizesInds[myGen]-length(muestraHoms)-length(muestraHets)),2)/(2*GenSampleSizesInds[myGen]));
+	 					Index=which(minimo==min(minimo));
+	 					if(length(AnatsHoms)>0){
+	 						muestraHomsAdditional=sample(AnatsHoms[setDifference(seq(0,length(AnatsHoms)-1,1),muestraHoms)],Index);
+	 					}else{
+	 						muestraHomsAdditional=NULL;
+	 					}
+	 					AnatInds=c(muestraHoms,muestraHets,muestraHomsAdditional); 
+	 				}else if(NbrHoms>length(AnatsHoms) & NbrHets<=(length(AnatsHets)+length(AnatsHetsBoth))){
+	 					if(NbrHets<=length(AnatsHetsBoth)){
+	 						muestraHets=sample(AnatsHetsBoth,NbrHets);
+	 					}else{
+	 						muestraHetsBoth=sample(AnatsHetsBoth,length(AnatsHetsBoth));
+	 						muestraHetsSingle=sample(AnatsHets,NbrHets-length(AnatsHetsBoth));
+	 						muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 					}
+	 					muestraHoms=sample(AnatsHoms,length(AnatsHoms));
+	 					RemainingFreq=SamplingBiassAnat[myGen]-(NbrHets+2*length(AnatsHoms))/(2*GenSampleSizesInds[myGen]);
+	 					minimo=abs(RemainingFreq-seq(0,min(length(AnatsHets)+length(AnatsHetsBoth)-NbrHets,GenSampleSizesInds[myGen]-length(muestraHoms)-length(muestraHets)),1)/(2*GenSampleSizesInds[myGen]));
+	 					Index=which(minimo==min(minimo));
+	 					if(length(c(AnatsHets,AnatsHetsBoth))>0){
+	 						muestraHetsAdditional=sample(c(AnatsHets,AnatsHetsBoth)[setDifference(seq(0,length(c(AnatsHets,AnatsHetsBoth))-1,1),muestraHets)],Index);
+	 					}else{
+	 						muestraHetsAdditional=NULL;
+	 					}
+	 					AnatInds=c(muestraHets,muestraHoms,muestraHetsAdditional); 
+	 						
+	 				}else{
+	 					cat("Absent" + "\n");
+	 					sim.simulationFinished();
+	 				}	
+	 				
+	 					 				
+	 				// NOW SELECT REMAINING STEPPE INDS, IF NEEDED, ACCORDING TO THE REMAINING TARGET FREQUENCY TO REACH											
+	 				
+	 				SteppeHoms=which(Msteppe3==2);
+	 				SteppeHets=which(Msteppe3==1 & M3==0);
+	 				
+	 				SteppeInds=NULL;
+	 				FreqSteppeTmp=sum(Msteppe3[AnatInds])/(GenSampleSizesInds[myGen]*2);
+	 				NewSteppeTarget=SamplingBiassSteppe[myGen]-FreqSteppeTmp;
+
+
+	 				
+	 				NewSize=(GenSampleSizesInds[myGen]-length(AnatInds));
+	 				if(NewSize==0){
+	 					NewFreq=0;
+	 					NbrHoms=0;
+	 					NbrHets=0;
+	 				}else{
+	 					NewFreq=min((NewSteppeTarget*GenSampleSizesInds[myGen]*2)/(2*NewSize),1.0);
+	 					NbrHoms=asInteger(round((NewFreq)*(NewFreq)*(NewSize)));
+	 					NbrHets=asInteger(round(2*(NewFreq)*(1-NewFreq)*(NewSize)));
+	 				}	 				
+	 				
+	 				
+	 				// IF NO NEED OF MORE STEPPE INDS, THEN DO NOT DO ANYTHING
+	 				
+	 				if(NewSteppeTarget<1/(2*GenSampleSizesInds[myGen])){ 				
+	 					muestraHoms=sample(SteppeHoms,0);
+	 					muestraHets=sample(SteppeHets,0);
+	 					SteppeInds=c(muestraHoms,muestraHets);
+	 					
+	 				// IF DO NOT HAVE ANY MORE INDIVIDUAL, DO NOT DO ANYTHING
+	 					
+	 				
+	 				}else if((GenSampleSizesInds[myGen]-length(AnatInds))==0){
+	 					muestraHoms=sample(SteppeHoms,0);
+	 					muestraHets=sample(SteppeHets,0);
+	 					SteppeInds=c(muestraHoms,muestraHets);
+	 				
+	 				// IF NEED OF MORE STEPPE INDS AND HAVE MORE, THEN IF HW FITS, USE HW	
+	 				
+	 				}else if(NbrHoms<=length(SteppeHoms) & NbrHets<=length(SteppeHets) & NewSteppeTarget>=1/(2*GenSampleSizesInds[myGen])){
+	 					muestraHoms=sample(SteppeHoms,NbrHoms);
+	 					muestraHets=sample(SteppeHets,NbrHets);
+	 					SteppeInds=c(muestraHoms,muestraHets);
+	 				
+	 				// IF NEED OF MORE STEPPE INDS, AND HW DOES NOT FIT, CHOOSE AS MUCH AS YOU CAN WITH WHAT YOU HAVE
+	 				
+	 				
+	 				}else if(NbrHoms<=length(SteppeHoms) & NbrHets>length(SteppeHets)){
+	 					muestraHets=sample(SteppeHets,length(SteppeHets));
+	 					muestraHoms=sample(SteppeHoms,NbrHoms);	 				
+	 					RemainingFreq=NewSteppeTarget-(2*NbrHoms+length(SteppeHets))/(2*NewSize);
+	 					minimo=abs(RemainingFreq-seq(0,min(length(SteppeHoms)-NbrHoms,NewSize-length(muestraHoms)-length(muestraHets)),2)/(2*NewSize));
+	 					Index=which(minimo==min(minimo));
+	 					if(length(SteppeHoms)>0){
+	 						muestraHomsAdditional=sample(SteppeHoms[setDifference(seq(0,length(SteppeHoms)-1,1),muestraHoms)],Index);
+	 					}else{
+	 						muestraHomsAdditional=NULL;
+	 					}
+	 					SteppeInds=c(muestraHoms,muestraHets,muestraHomsAdditional); 
+	 					
+	 				}else if(NbrHoms>length(SteppeHoms) & NbrHets<=length(SteppeHets)){	 				
+	 					muestraHoms=sample(SteppeHoms,length(SteppeHoms));
+	 					muestraHets=sample(SteppeHets,NbrHets);
+	 					RemainingFreq=NewSteppeTarget-(2*length(SteppeHoms)+NbrHets)/(2*NewSize);
+	 					minimo=abs(RemainingFreq-seq(0,min(length(SteppeHets)-NbrHets,NewSize-length(muestraHoms)-length(muestraHets)),1)/(2*NewSize));
+	 					Index=which(minimo==min(minimo));
+	 					if(length(SteppeHets)>0){
+	 						muestraHetsAdditional=sample(SteppeHets[setDifference(seq(0,length(SteppeHets)-1,1),muestraHets)],Index);
+	 					}else{
+	 						muestraHetsAdditional=NULL;
+	 					}
+	 					SteppeInds=c(muestraHets,muestraHoms,muestraHetsAdditional);
+	 					
+	 				
+	 				}else{
+	 					cat("Absent \n");
+	 					sim.simulationFinished();
+	 				}
+	 				
+	 			// IF STEPPE ANCESTRY IS BIGGER THAN ANATOLIAN I START SELECTING STEPPE SAMPLES. CHECK PREVIOUS BLOCK FOR DETAILS ON EACH PART.
+	 					 			
+	 			}else{
+	 			
+	 				SteppeHoms=which(Msteppe3==2);
+	 				SteppeHetsBoth=which(Msteppe3==1 & M3==1);
+	 				SteppeHets=which(Msteppe3==1 & M3==0);
+	 				
+	 				Others=which(Msteppe3==0 & M3==0);
+	 				SteppeInds=NULL;
+	 				NbrHoms=asInteger(round((SamplingBiassSteppe[myGen])*(SamplingBiassSteppe[myGen])*GenSampleSizesInds[myGen]));
+	 				NbrHets=asInteger(round(2*(SamplingBiassSteppe[myGen])*(1-SamplingBiassSteppe[myGen])*GenSampleSizesInds[myGen]));
+	 				if(NbrHoms<=length(SteppeHoms) & NbrHets<=(length(SteppeHets)+length(SteppeHetsBoth))){
+	 					muestraHoms=sample(SteppeHoms,NbrHoms);
+	 					
+	 					if(NbrHets<=length(SteppeHetsBoth)& NbrHets<=SamplingBiassAnat[myGen]*(2*GenSampleSizesInds[myGen])){
+	 						muestraHets=sample(SteppeHetsBoth,NbrHets);
+	 					}else if(NbrHets<=length(SteppeHetsBoth) & NbrHets>SamplingBiassAnat[myGen]*(2*GenSampleSizesInds[myGen])){
+	 						limit=asInteger(floor(SamplingBiassAnat[myGen]*(2*GenSampleSizesInds[myGen])));
+	 						if((NbrHets-limit)<=length(SteppeHets)){
+	 							muestraHetsBoth=sample(SteppeHetsBoth,limit);
+	 							muestraHetsSingle=sample(SteppeHetsBoth,NbrHets-limit);
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}else{
+	 							muestraHets=sample(SteppeHetsBoth,NbrHets);
+	 						}
+	 					}else{
+	 						muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 						muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth));
+	 						muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 					}
+
+	 					SteppeInds=c(muestraHoms,muestraHets);
+	 					
+	 					
+	 					if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+1/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+1/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen]) & (NbrHets+1)<=(length(SteppeHets)+length(SteppeHetsBoth)) & (NbrHoms+NbrHets+1)<=GenSampleSizesInds[myGen]){
+	 						muestraHoms=sample(SteppeHoms,NbrHoms);
+	 						if((NbrHets+1)<=length(SteppeHetsBoth)){
+	 							muestraHets=sample(SteppeHetsBoth,NbrHets+1);
+	 						}else{
+	 							muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 							muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth)+1);
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}
+	 						SteppeInds=c(muestraHoms,muestraHets);
+
+	 					}
+	 					else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen]) & (NbrHoms+1)<=length(SteppeHoms)& (NbrHoms+NbrHets+1)<=GenSampleSizesInds[myGen]){
+	 						muestraHoms=sample(SteppeHoms,NbrHoms+1);
+	 						if(NbrHets<=length(SteppeHetsBoth)){
+	 							muestraHets=sample(SteppeHetsBoth,NbrHets);
+	 						}else{
+	 							muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 							muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth));
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}
+	 					
+	 						SteppeInds=c(muestraHoms,muestraHets);
+	 					}
+	 					else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen]) & (NbrHets+2)<=(length(SteppeHets)+length(SteppeHetsBoth)) & (NbrHoms+1)>length(SteppeHoms)& (NbrHoms+NbrHets+2)<=GenSampleSizesInds[myGen]){
+	 						muestraHoms=sample(SteppeHoms,NbrHoms);
+	 						if((NbrHets+2)<=length(SteppeHetsBoth)){
+	 							muestraHets=sample(SteppeHetsBoth,NbrHets+2);
+	 						}else{
+	 							muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 							muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth)+2);
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}
+	 						SteppeInds=c(muestraHoms,muestraHets);
+	 					}
+	 					else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassSteppe[myGen]) & (NbrHets+1)<=(length(SteppeHets)+length(SteppeHetsBoth)) & (NbrHoms+1)<=length(SteppeHoms)& (NbrHoms+NbrHets+2)<=GenSampleSizesInds[myGen]){
+	 						muestraHoms=sample(SteppeHoms,NbrHoms+1);
+	 						if((NbrHets+1)<=length(SteppeHetsBoth)){
+	 							muestraHets=sample(SteppeHetsBoth,NbrHets+1);
+	 						}else{
+	 							muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 							muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth)+1);
+	 							muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 						}
+	 						SteppeInds=c(muestraHoms,muestraHets);
+	 					}else{
+	 					}
+	 					
+	 				}else if(NbrHoms<=length(SteppeHoms) & NbrHets>(length(SteppeHets)+length(SteppeHetsBoth))){
+	 					muestraHoms=sample(SteppeHoms,NbrHoms);
+	 					muestraHets=sample(SteppeHets,length(SteppeHets)+length(SteppeHetsBoth));
+	 					RemainingFreq=SamplingBiassSteppe[myGen]-(2*NbrHoms+length(SteppeHets)+length(SteppeHetsBoth))/(2*GenSampleSizesInds[myGen]);
+	 					minimo=abs(RemainingFreq-seq(0,min(length(SteppeHoms)-NbrHoms,GenSampleSizesInds[myGen]-length(muestraHoms)-length(muestraHets)),2)/(2*GenSampleSizesInds[myGen]));
+	 					Index=which(minimo==min(minimo));
+	 					if(length(SteppeHoms)>0){
+							muestraHomsAdditional=sample(SteppeHoms[setDifference(seq(0,length(SteppeHoms)-1,1),muestraHoms)],Index);
+						}else{
+							muestraHomsAdditional=NULL;
+						}	
+	 					SteppeInds=c(muestraHoms,muestraHets,muestraHomsAdditional); 
+	 					
+	 				}else if(NbrHoms>length(SteppeHoms) & NbrHets<=(length(SteppeHets)+length(SteppeHetsBoth))){
+	 					if(NbrHets<=length(SteppeHetsBoth)){
+	 						muestraHets=sample(SteppeHetsBoth,NbrHets);
+	 					}else{
+	 						muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 						muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth));
+	 						muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 					}
+	 					muestraHoms=sample(SteppeHoms,length(SteppeHoms));
+	 					RemainingFreq=SamplingBiassSteppe[myGen]-(NbrHets+2*length(SteppeHoms))/(2*GenSampleSizesInds[myGen]);
+	 					minimo=abs(RemainingFreq-seq(0,min(length(SteppeHets)+length(SteppeHetsBoth)-NbrHets,GenSampleSizesInds[myGen]-length(muestraHoms)-length(muestraHets)),1)/(2*GenSampleSizesInds[myGen]));
+	 					Index=which(minimo==min(minimo));
+	 					if(length(c(SteppeHets,SteppeHetsBoth))>0){
+							muestraHetsAdditional=sample(c(SteppeHets,SteppeHetsBoth)[setDifference(seq(0,length(c(SteppeHets,SteppeHetsBoth))-1,1),muestraHets)],Index);
+						}else{
+							muestraHetsAdditional=NULL;
+						}	
+	 					SteppeInds=c(muestraHets,muestraHoms,muestraHetsAdditional); 
+	 						
+	 				
+	 				}else{
+	 					cat("Absent  \n");
+	 					
+	 					sim.simulationFinished();
+	 				}	 											
+	 				
+	 				AnatsHoms=which(M3==2);
+	 				AnatsHets=which(M3==1 & Msteppe3==0);
+	 				
+	 				AnatInds=NULL;
+	 				FreqAnatTmp=sum(M3[SteppeInds])/(GenSampleSizesInds[myGen]*2);
+	 				NewAnatTarget=SamplingBiassAnat[myGen]-FreqAnatTmp;
+	 					 				
+	 					 				
+	 				NewSize=(GenSampleSizesInds[myGen]-length(SteppeInds));
+	 				if(NewSize==0){
+	 					NewFreq=0;
+	 					NbrHoms=0;
+	 					NbrHets=0;
+	 				}else{
+	 					NewFreq=min((NewAnatTarget*GenSampleSizesInds[myGen]*2)/(2*NewSize),1.0);
+	 					NbrHoms=asInteger(round((NewFreq)*(NewFreq)*(NewSize)));
+	 					NbrHets=asInteger(round(2*(NewFreq)*(1-NewFreq)*(NewSize)));
+	 				}	 	
+	 				
+	 				
+	 				
+	 				// IF NO NEED OF MORE STEPPE INDS, THEN DO NOT DO ANYTHING
+	 				
+	 				if(NewAnatTarget<1/(2*GenSampleSizesInds[myGen])){ 				
+	 					muestraHoms=sample(AnatsHoms,0);
+	 					muestraHets=sample(AnatsHets,0);
+	 					AnatInds=c(muestraHoms,muestraHets);
+	 					
+	 				// IF DO NOT HAVE ANY MORE INDIVIDUAL, DO NOT DO ANYTHING
+	 					
+	 				
+	 				}else if((GenSampleSizesInds[myGen]-length(SteppeInds))==0){
+	 					muestraHoms=sample(AnatsHoms,0);
+	 					muestraHets=sample(AnatsHets,0);
+	 					AnatInds=c(muestraHoms,muestraHets);
+	 				
+	 				// IF NEED OF MORE STEPPE INDS AND HAVE MORE, THEN IF HW FITS, USE HW	
+	 				
+	 				}else if(NbrHoms<=length(AnatsHoms) & NbrHets<=length(AnatsHets) & NewAnatTarget>=1/(2*GenSampleSizesInds[myGen])){
+	 					muestraHoms=sample(AnatsHoms,NbrHoms);
+	 					muestraHets=sample(AnatsHets,NbrHets);
+	 					AnatInds=c(muestraHoms,muestraHets);
+	 				
+	 				// IF NEED OF MORE STEPPE INDS, AND HW DOES NOT FIT, CHOOSE AS MUCH AS YOU CAN WITH WHAT YOU HAVE
+	 				
+	 				
+	 				}else if(NbrHoms<=length(AnatsHoms) & NbrHets>length(AnatsHets)){
+	 					muestraHets=sample(AnatsHets,length(AnatsHets));
+	 					muestraHoms=sample(AnatsHoms,NbrHoms);	 				
+	 					RemainingFreq=NewAnatTarget-(2*NbrHoms+length(AnatsHets))/(2*NewSize);
+	 					minimo=abs(RemainingFreq-seq(0,min(length(AnatsHoms)-NbrHoms,NewSize-length(muestraHoms)-length(muestraHets)),2)/(2*NewSize));
+	 					Index=which(minimo==min(minimo));
+	 					if(length(AnatsHoms)>0){
+	 						muestraHomsAdditional=sample(AnatsHoms[setDifference(seq(0,length(AnatsHoms)-1,1),muestraHoms)],Index);
+	 					}else{
+	 						muestraHomsAdditional=NULL;
+	 					}
+	 					AnatInds=c(muestraHoms,muestraHets,muestraHomsAdditional); 
+	 					
+	 				}else if(NbrHoms>length(AnatsHoms) & NbrHets<=length(AnatsHets)){	 				
+	 					muestraHoms=sample(AnatsHoms,length(AnatsHoms));
+	 					muestraHets=sample(AnatsHets,NbrHets);
+	 					RemainingFreq=NewAnatTarget-(2*length(AnatsHoms)+NbrHets)/(2*NewSize);
+	 					minimo=abs(RemainingFreq-seq(0,min(length(AnatsHets)-NbrHets,NewSize-length(muestraHoms)-length(muestraHets)),1)/(2*NewSize));
+	 					Index=which(minimo==min(minimo));
+	 					if(length(AnatsHets)>0){	 					
+	 						muestraHetsAdditional=sample(AnatsHets[setDifference(seq(0,length(AnatsHets)-1,1),muestraHets)],Index);
+	 					}else{
+	 						muestraHetsAdditional=NULL;
+	 					}
+	 					AnatInds=c(muestraHets,muestraHoms,muestraHetsAdditional);
+	 					
+	 				
+	 				}else{
+	 					cat("Absent \n");
+	 					sim.simulationFinished();
+	 				}
+ 				
+	 			}
+	 			
+	 			
+	 			// NOW IN BOTH CASES, COMPLETE THE NUMBER OF INDS WITH THE REST OF THE POPULATION THAT ARE NEITHER STEPPE NOR ANATOLIAN
+	 			
+	 			
+	 			// GET THE REAMINING INDS, BUT IF I NEED TOO MANY AND I DONT HAVE THEM AMONG OTHERS THEN JUST GET THE REST FROM THE ANATS AND STEPPES
+	 			
+	 			
+	 			if((GenSampleSizesInds[myGen]-length(AnatInds)-length(SteppeInds)) > length(Others)){
+	 				OthersInds1=sample(Others,length(Others));
+	 				NonOthers=which(Msteppe3>0 | M3>0);
+	 				OthersAdditional=sample(NonOthers[setDifference(seq(0,length(NonOthers)-1,1),c(AnatInds,SteppeInds))],(GenSampleSizesInds[myGen]-length(AnatInds)-length(SteppeInds))-length(Others));
+	 				OthersInds=c(OthersInds1,OthersAdditional);
+	 			}else{
+	 				OthersInds=sample(Others,GenSampleSizesInds[myGen]-length(AnatInds)-length(SteppeInds));
+	 			}		
+
+	 			
+	 			//OthersInds=sample(Others,GenSampleSizesInds[myGen]-length(AnatInds)-length(SteppeInds));
+	 			if(length(AnatInds)>0){
+	 				AnatInds1=AnatInds*2;
+	 				AnatInds2=(AnatInds*2+1);
+	 				AnatInds=c(AnatInds1,AnatInds2);
+	 			}
+	 			if(length(SteppeInds)>0){
+	 				SteppeInds1=SteppeInds*2;
+	 				SteppeInds2=(SteppeInds*2+1);
+	 				SteppeInds=c(SteppeInds1,SteppeInds2);
+	 			}
+
+	 			OthersInds1=OthersInds*2;
+	 			OthersInds2=(OthersInds*2+1);
+	 			OthersInds=c(OthersInds1,OthersInds2);
+	 			Sampleo2=c(AnatInds,SteppeInds,OthersInds);
+	 			Long=asInteger(length(Sampleo2)/2);
+ 							
+	 			MySampleIndsTmp = DATA[Sampleo2];
+	 			
+	 			
+	 			// FINALLY, EXTRACT PSEUDO-HAPLOID GENOTYPES BY RANDOMLY EXTRACTING ONE ALLELE FOR EACH INDIVIDUAL...
+	 									
+	 			probs=rbinom(Long,1,0.5);		
+	 			M=matrix(MySampleIndsTmp.containsMarkerMutation(m2,1)[0:((Long*2)-1)],nrow=Long,byrow=T);
+	 			M=t(apply(M,0, "c(sum(applyValue[0]),sum(applyValue[1]));")); 
+				M=cbind(M,0:(Long-1));
+				Sampleo=apply(M,0, "if (applyValue[0] == 1) (1-probs[applyValue[2]]); else if (applyValue[1] == 1) probs[applyValue[2]]; else applyValue[0];");  	
+	 			M=matrix(0:((Long*2)-1),nrow=Long,byrow=T);
+	 			M=cbind(M,0:(Long-1));
+	 			Sampleo2=apply(M,0, "applyValue[Sampleo[applyValue[2]]];");
+	 			MySampleInds =  MySampleIndsTmp[Sampleo2];
+	 			
+	 			// ...AND CALCULATE FREQUENCIES FOR THE SELECTED VARIANT, ANATOLIAN MARKER AND STEPPE MARKER
+
+	 			count1=sum(MySampleInds.countOfMutationsOfType(m2));
+            freq=(count1)/(GenSampleSizesInds[myGen]);
+            count1=sum(MySampleIndsTmp.countOfMutationsOfType(m4));                               	
+            freqAncestryAnat=(count1)/(GenSampleSizesInds[myGen]*2);
+            count1=sum(MySampleIndsTmp.countOfMutationsOfType(m5));                                	
+            freqAncestrySteppe=(count1)/(GenSampleSizesInds[myGen]*2);
+	 			
+	 		
+	 		
+	 		// WHEN ONLY THE ANATOLIAN PULSE HAS HAPPENED
+	 		
+	 		}else if(sim.generation >= $PULSE1 & 
+	 		sim.generation < $PULSE2){
+	 			
+	 			DATA=p2.individuals.genomes;
+	 			
+	 			// Genotypes for Anat marker
+	 			M=matrix(DATA.containsMarkerMutation(m4,2)[0:(length(DATA.containsMarkerMutation(m4,2))-1)],nrow=asInteger(length(DATA.containsMarkerMutation(m4,2))/2),byrow=T);
+	 			M2=t(apply(M,0, "c(sum(applyValue[0]),sum(applyValue[1]));"));
+	 			M3=apply(M,0, "c(sum(c(applyValue[0],applyValue[1])));");
+	 			M=cbind(M2,M3);
+	 			
+	 			AnatsHoms=which(M3==2);
+	 			AnatsHets=which(M3==1);
+	 			
+	 			Others=which(M3==0);
+	 			AnatInds=NULL;
+	 			NbrHoms=asInteger(floor((SamplingBiassAnat[myGen])*(SamplingBiassAnat[myGen])*GenSampleSizesInds[myGen]));
+	 			NbrHets=asInteger(floor(2*(SamplingBiassAnat[myGen])*(1-SamplingBiassAnat[myGen])*GenSampleSizesInds[myGen]));
+	 			
+	 			
+	 			cat(NbrHets + "\t" + length(AnatsHets) + "\t"  + NbrHoms+ "\t"+ length(AnatsHoms) + "\t" + SamplingBiassAnat[myGen] + "\t" + GenSampleSizesInds[myGen] + "\n");
+	 			
+	 			
+	 			if(NbrHoms<=length(AnatsHoms) & NbrHets<=length(AnatsHets)){
+	 				muestraHoms=sample(AnatsHoms,NbrHoms);
+	 				muestraHets=sample(AnatsHets,NbrHets);
+	 				AnatInds=c(muestraHoms,muestraHets);
+	 				if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+1/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+1/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & (NbrHets+1)<=length(AnatsHets)){
+	 					muestraHoms=sample(AnatsHoms,NbrHoms);
+	 					muestraHets=sample(AnatsHets,NbrHets+1);
+	 					AnatInds=c(muestraHoms,muestraHets);
+	 					
+	 				}
+	 				else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & (NbrHoms+1)<=length(AnatsHoms) & (NbrHoms+1+NbrHets)<=GenSampleSizesInds[myGen]){
+	 					muestraHoms=sample(AnatsHoms,NbrHoms+1);
+	 					muestraHets=sample(AnatsHets,NbrHets);
+	 					AnatInds=c(muestraHoms,muestraHets);
+	 					
+	 				}
+	 				else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])>=abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+2/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & (NbrHets+2)<=length(AnatsHets) & (NbrHoms+1)>length(AnatsHoms) & (NbrHoms+NbrHets+2)<=GenSampleSizesInds[myGen]){
+	 					muestraHoms=sample(AnatsHoms,NbrHoms);
+	 					muestraHets=sample(AnatsHets,NbrHets+2);
+	 					AnatInds=c(muestraHoms,muestraHets);
+	 					
+	 				}
+	 				else if(abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])+3/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen])<abs((2*NbrHoms+NbrHets)/(2*GenSampleSizesInds[myGen])-SamplingBiassAnat[myGen]) & (NbrHets+1)<=length(AnatsHets) & (NbrHoms+1)<=length(AnatsHoms) & (NbrHoms+NbrHets+2)<=GenSampleSizesInds[myGen]){
+	 					muestraHoms=sample(AnatsHoms,NbrHoms+1);
+	 					muestraHets=sample(AnatsHets,NbrHets+1);
+	 					AnatInds=c(muestraHoms,muestraHets);
+	 					
+	 				}else{
+	 				}
+	 			}else if(NbrHoms<=length(AnatsHoms) & NbrHets>length(AnatsHets)){
+	 				muestraHets=sample(AnatsHets,length(AnatsHets));
+	 				muestraHoms=sample(AnatsHoms,NbrHoms);	 				
+	 				RemainingFreq=SamplingBiassAnat[myGen]-(2*NbrHoms+length(AnatsHets))/(2*GenSampleSizesInds[myGen]);
+	 				minimo=abs(RemainingFreq-seq(0,min(length(AnatsHoms)-NbrHoms,GenSampleSizesInds[myGen]-length(muestraHoms)-length(muestraHets)),2)/(2*GenSampleSizesInds[myGen]));
+	 				Index=which(minimo==min(minimo));
+	 				if(length(AnatsHoms)>0){
+	 					muestraHomsAdditional=sample(AnatsHoms[setDifference(seq(0,length(AnatsHoms)-1,1),muestraHoms)],Index);
+	 				}else{
+	 					muestraHomsAdditional=NULL;
+	 				}
+	 				AnatInds=c(muestraHoms,muestraHets,muestraHomsAdditional); 
+	 				
+	 			}else if(NbrHoms>length(AnatsHoms) & NbrHets<=length(AnatsHets)){	 				
+	 				muestraHoms=sample(AnatsHoms,length(AnatsHoms));
+	 				muestraHets=sample(AnatsHets,NbrHets);
+	 				RemainingFreq=SamplingBiassAnat[myGen]-(2*length(AnatsHoms)+NbrHets)/(2*GenSampleSizesInds[myGen]);
+	 				minimo=abs(RemainingFreq-seq(0,min(length(AnatsHets)-NbrHets,GenSampleSizesInds[myGen]-length(muestraHoms)-length(muestraHets)),1)/(2*GenSampleSizesInds[myGen]));
+	 				Index=which(minimo==min(minimo));
+	 				if(length(AnatsHets)>0){
+	 					muestraHetsAdditional=sample(AnatsHets[setDifference(seq(0,length(AnatsHets)-1,1),muestraHets)],Index);
+	 				}else{
+	 					muestraHetsAdditional=NULL;
+	 				}
+	 				AnatInds=c(muestraHets,muestraHoms,muestraHetsAdditional);
+	 				
+	 			}else{	
+	 				cat("Absent \n");
+	 				sim.simulationFinished();
+	 			}	 											
+	 				
+	 			if((GenSampleSizesInds[myGen]-length(AnatInds)) > length(Others)){
+	 				OthersInds1=sample(Others,length(Others));
+	 				NonOthers=which(M3>0);
+	 				OthersAdditional=sample(NonOthers[setDifference(seq(0,length(NonOthers)-1,1),c(AnatInds))],(GenSampleSizesInds[myGen]-length(AnatInds))-length(Others));
+	 				OthersInds=c(OthersInds1,OthersAdditional);
+	 			}else{
+	 				OthersInds=sample(Others,GenSampleSizesInds[myGen]-length(AnatInds));
+	 			}		
+	 				 			
+	 			//OthersInds=sample(Others,GenSampleSizesInds[myGen]-length(AnatInds));
+	 			if(length(AnatInds)>0){
+	 				AnatInds1=AnatInds*2;
+	 				AnatInds2=(AnatInds*2+1);
+	 				AnatInds=c(AnatInds1,AnatInds2);
+	 			}
+	 			
+	 			OthersInds1=OthersInds*2;
+	 			OthersInds2=(OthersInds*2+1);
+	 			OthersInds=c(OthersInds1,OthersInds2);
+	 			Sampleo2=c(AnatInds,OthersInds);
+	 			Long=asInteger(length(Sampleo2)/2);
+ 							
+	 			MySampleIndsTmp = DATA[Sampleo2];
+	 			
+	 			// FINALLY, EXTRACT PSEUDO-HAPLOID GENOTYPES BY RANDOMLY EXTRACTING ONE ALLELE FOR EACH INDIVIDUAL...
+	 									
+	 			probs=rbinom(Long,1,0.5);		
+	 			M=matrix(MySampleIndsTmp.containsMarkerMutation(m2,1)[0:((Long*2)-1)],nrow=Long,byrow=T);
+	 			M=t(apply(M,0, "c(sum(applyValue[0]),sum(applyValue[1]));")); 
+				M=cbind(M,0:(Long-1));
+				Sampleo=apply(M,0, "if (applyValue[0] == 1) (1-probs[applyValue[2]]); else if (applyValue[1] == 1) probs[applyValue[2]]; else applyValue[0];");  	
+	 			M=matrix(0:((Long*2)-1),nrow=Long,byrow=T);
+	 			M=cbind(M,0:(Long-1));
+	 			Sampleo2=apply(M,0, "applyValue[Sampleo[applyValue[2]]];");
+	 			MySampleInds =  MySampleIndsTmp[Sampleo2];
+	 			
+	 			// ...AND CALCULATE FREQUENCIES FOR THE SELECTED VARIANT, ANATOLIAN MARKER AND STEPPE MARKER
+	 			
+	 			count1=sum(MySampleInds.countOfMutationsOfType(m2));
+            freq=(count1)/(GenSampleSizesInds[myGen]);
+            count1=sum(MySampleIndsTmp.countOfMutationsOfType(m4));                               	
+            freqAncestryAnat=(count1)/(GenSampleSizesInds[myGen]*2);
+            count1=sum(MySampleIndsTmp.countOfMutationsOfType(m5));                                	
+            freqAncestrySteppe=(count1)/(GenSampleSizesInds[myGen]*2);
+	 		
+	 		
+	 		// IF NO PULSE HAS HAPPENED YET, JUST EXTRACT RANDOM INDIVIDUALS
+	 			
+	 		}else{
+	 		
+	 		
+	 			MySampleIndsTmp=sample(p2.individuals, GenSampleSizesInds[myGen]).genomes;
+	 			
+	 			// FINALLY, EXTRACT PSEUDO-HAPLOID GENOTYPES BY RANDOMLY EXTRACTING ONE ALLELE FOR EACH INDIVIDUAL...
+	 			
+	 			probs=rbinom(GenSampleSizesInds[myGen],1,0.5);		
+	 			M=matrix(MySampleIndsTmp.containsMarkerMutation(m2,1)[0:((GenSampleSizesInds[myGen]*2)-1)],nrow=GenSampleSizesInds[myGen],byrow=T);
+	 			M=t(apply(M,0, "c(sum(applyValue[0]),sum(applyValue[1]));")); 
+				M=cbind(M,0:(GenSampleSizesInds[myGen]-1));
+				Sampleo=apply(M,0, "if (applyValue[0] == 1) (1-probs[applyValue[2]]); else if (applyValue[1] == 1) probs[applyValue[2]]; else applyValue[0];");  	
+	 			M=matrix(0:((GenSampleSizesInds[myGen]*2)-1),nrow=GenSampleSizesInds[myGen],byrow=T);
+	 			M=cbind(M,0:(GenSampleSizesInds[myGen]-1));
+	 			Sampleo2=apply(M,0, "applyValue[Sampleo[applyValue[2]]];");
+	 			MySampleInds=MySampleIndsTmp[Sampleo2];
+	 			
+	 			// ...AND CALCULATE FREQUENCIES FOR THE SELECTED VARIANT, ANATOLIAN MARKER AND STEPPE MARKER
+	 			
+	 			count1=sum(MySampleInds.countOfMutationsOfType(m2));
+            freq=(count1)/(GenSampleSizesInds[myGen]);
+            count1=sum(MySampleIndsTmp.countOfMutationsOfType(m4));                               	
+            freqAncestryAnat=(count1)/(GenSampleSizesInds[myGen]*2);
+            count1=sum(MySampleIndsTmp.countOfMutationsOfType(m5));                                	
+            freqAncestrySteppe=(count1)/(GenSampleSizesInds[myGen]*2);
+	 			
+	 			
+	 		}
+	 		
+	 		// OUTPUT DATA TO BE READ WITH AWK COMMANDS IN A NEXT SCRIPT
+	 		
+	 		GenReal=(400-sim.generation)*250;
+	 		cat("Generation\t" + sim.generation + "\t" + GenReal +  "\tFreq\t" + freq + "\tNumberInds\t" + GenSampleSizesInds[myGen] + "\tCarrierStatus\t" + paste(MySampleInds.countOfMutationsOfType(m2), sep=" ") + "\tFreqAncestryAnat\t" + freqAncestryAnat + "\tCarrierStatusAnat\t" + paste(MySampleIndsTmp.countOfMutationsOfType(m4), sep=" ") + "\tFreqAncestrySteppe\t" + freqAncestrySteppe + "\tCarrierStatusSteppe\t" + paste(MySampleIndsTmp.countOfMutationsOfType(m5), sep=" ") + "\n");
+	 								
+		
+		// IF NO aDNA AT THAT GENERATION JUST EXTRACT 0 INDIVIDUALS
+		
+		}else{
+		
+		
+			// OUTPUT DATA TO BE READ WITH AWK COMMANDS IN A NEXT SCRIPT
+		
+			MySampleInds =  sample(p2.individuals, 0).genomes;
+			freq=0;
+		   freqAncestryAnat=0;
+		   freqAncestrySteppe=0;
+		   GenReal=(400-sim.generation)*250;
+		   cat("Generation\t" + sim.generation + "\t" + GenReal +  "\tFreq\t" + freq + "\tNumberInds\t" + GenSampleSizesInds[myGen] + "\tCarrierStatus\t" + "0" + "\tFreqAncestryAnat\t" + freqAncestryAnat  + "\tCarrierStatusAnat\t" + "0" + "\tFreqAncestrySteppe\t" + freqAncestrySteppe + "\tCarrierStatusSteppe\t" + "0" + "\n");
+		}                               			                                             
+    }
+}
+
+
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						////////////////// 
+////////////////// 						LAST GENERATION: PRESENT 
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						//////////////////
+//////////////////																						////////////////// 
+
+
+// !! In this code we assume 500 EUR individuals in the present generation and 0.54 Steppe ancestry proportion and 0.36 Anatolian ancestry proportion
+
+// Output and terminate.
+400 late() {
+	
+		// Simulated 1,000 Genome Project inds (European individuals are simulated by matching their ancestry)
+		
+		MySamplep11 = sample(p1.individuals, 100).genomes;
+      MySamplep12 = sample(p1.individuals, 100).genomes;
+      MySamplep13 = sample(p1.individuals, 100).genomes;
+      MySamplep14 = sample(p1.individuals, 100).genomes;
+		MySamplep15 = sample(p1.individuals, 100).genomes;
+
+      MySamplep31 = sample(p3.individuals, 100).genomes;
+      MySamplep32 = sample(p3.individuals, 100).genomes;
+      MySamplep33 = sample(p3.individuals, 100).genomes;
+      MySamplep34 = sample(p3.individuals, 100).genomes;
+      MySamplep35 = sample(p3.individuals, 100).genomes;
+		
+		
+		// ANCESTRY MATCHING
+																					
+		DATA=p2.individuals.genomes;
+	 			
+	 	// Genotypes for Anat marker
+	 	M=matrix(DATA.containsMarkerMutation(m4,2)[0:(length(DATA.containsMarkerMutation(m4,2))-1)],nrow=asInteger(length(DATA.containsMarkerMutation(m4,2))/2),byrow=T);
+	 	M2=t(apply(M,0, "c(sum(applyValue[0]),sum(applyValue[1]));"));
+	 	M3=apply(M,0, "c(sum(c(applyValue[0],applyValue[1])));");
+	 	M=cbind(M2,M3);
+	 			
+	 	// Genotypes for Steppe marker
+	 	Msteppe=matrix(DATA.containsMarkerMutation(m5,2)[0:(length(DATA.containsMarkerMutation(m5,2))-1)],nrow=asInteger(length(DATA.containsMarkerMutation(m5,2))/2),byrow=T);
+	 	Msteppe2=t(apply(Msteppe,0, "c(sum(applyValue[0]),sum(applyValue[1]));"));
+	 	Msteppe3=apply(Msteppe,0, "c(sum(c(applyValue[0],applyValue[1])));");
+	 	Msteppe=cbind(Msteppe2,Msteppe3);
+	 			
+	 	
+	 	
+	 	// Extract first Steppes as it is the main ancestry
+	 	SteppeHoms=which(Msteppe3==2);
+	 	SteppeHetsBoth=which(Msteppe3==1 & M3==1);
+	 	SteppeHets=which(Msteppe3==1 & M3==0);
+	 	
+	 	Others=which(Msteppe3==0 & M3==0);
+	 	SteppeInds=NULL;
+	 	NbrHoms=asInteger(round((0.54)*(0.54)*500));
+	 	NbrHets=asInteger(round(2*(0.54)*(1-0.54)*500));
+	 	
+	 	
+	 	
+	 	if(NbrHoms<=length(SteppeHoms) & NbrHets<=(length(SteppeHets)+length(SteppeHetsBoth))){
+	 		muestraHoms=sample(SteppeHoms,NbrHoms);
+	 					
+	 		if(NbrHets<=length(SteppeHetsBoth) & NbrHets<=0.36*(2*500)){
+	 			muestraHets=sample(SteppeHetsBoth,NbrHets);
+	 		}else if(NbrHets<=length(SteppeHetsBoth) & NbrHets>0.36*(2*500)){
+	 			limit=asInteger(floor(0.36*(2*500)));
+	 			if((NbrHets-limit)<=length(SteppeHets)){
+	 				muestraHetsBoth=sample(SteppeHetsBoth,limit);
+	 				muestraHetsSingle=sample(SteppeHetsBoth,NbrHets-limit);
+	 				muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 			}else{
+	 				muestraHets=sample(SteppeHetsBoth,NbrHets);
+	 			}
+
+	 		}else{
+	 			muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 			muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth));
+	 			muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 		}
+
+	 		SteppeInds=c(muestraHoms,muestraHets);
+	 					
+	 					
+	 		if(abs((2*NbrHoms+NbrHets)/(2*500)+1/(2*500)-0.54)<abs((2*NbrHoms+NbrHets)/(2*500)-0.54) & abs((2*NbrHoms+NbrHets)/(2*500)+2/(2*500)-0.54)>=abs((2*NbrHoms+NbrHets)/(2*500)+1/(2*500)-0.54) & (NbrHets+1)<=(length(SteppeHets)+length(SteppeHetsBoth)) & (NbrHoms+NbrHets+1)<=500){
+	 			muestraHoms=sample(SteppeHoms,NbrHoms);
+	 			if((NbrHets+1)<=length(SteppeHetsBoth)){
+	 				muestraHets=sample(SteppeHetsBoth,NbrHets+1);
+	 			}else{
+	 				muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 				muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth)+1);
+	 				muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 			}
+	 			SteppeInds=c(muestraHoms,muestraHets);
+
+	 		}
+	 		else if(abs((2*NbrHoms+NbrHets)/(2*500)+2/(2*500)-0.54)<abs((2*NbrHoms+NbrHets)/(2*500)-0.54) & abs((2*NbrHoms+NbrHets)/(2*500)+3/(2*500)-0.54)>=abs((2*NbrHoms+NbrHets)/(2*500)+2/(2*500)-0.54) & (NbrHoms+1)<=length(SteppeHoms)& (NbrHoms+NbrHets+1)<=500){
+	 			muestraHoms=sample(SteppeHoms,NbrHoms+1);
+	 			if(NbrHets<=length(SteppeHetsBoth)){
+	 				muestraHets=sample(SteppeHetsBoth,NbrHets);
+	 			}else{
+	 				muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 				muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth));
+	 				muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 			}
+	 					
+	 			SteppeInds=c(muestraHoms,muestraHets);
+	 		}
+	 		else if(abs((2*NbrHoms+NbrHets)/(2*500)+2/(2*500)-0.54)<abs((2*NbrHoms+NbrHets)/(2*500)-0.54) & abs((2*NbrHoms+NbrHets)/(2*500)+3/(2*500)-0.54)>=abs((2*NbrHoms+NbrHets)/(2*500)+2/(2*500)-0.54) & (NbrHets+2)<=(length(SteppeHets)+length(SteppeHetsBoth)) & (NbrHoms+1)>length(SteppeHoms)& (NbrHoms+NbrHets+2)<=500){
+	 			muestraHoms=sample(SteppeHoms,NbrHoms);
+	 			if((NbrHets+2)<=length(SteppeHetsBoth)){
+	 				muestraHets=sample(SteppeHetsBoth,NbrHets+2);
+	 			}else{
+	 				muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 				muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth)+2);
+	 				muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 			}
+	 			SteppeInds=c(muestraHoms,muestraHets);
+	 		}
+	 		else if(abs((2*NbrHoms+NbrHets)/(2*500)+3/(2*500)-0.54)<abs((2*NbrHoms+NbrHets)/(2*500)-0.54) & (NbrHets+1)<=(length(SteppeHets)+length(SteppeHetsBoth)) & (NbrHoms+1)<=length(SteppeHoms)& (NbrHoms+NbrHets+2)<=500){
+	 			muestraHoms=sample(SteppeHoms,NbrHoms+1);
+	 			if((NbrHets+1)<=length(SteppeHetsBoth)){
+	 				muestraHets=sample(SteppeHetsBoth,NbrHets+1);
+	 			}else{
+	 				muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 				muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth)+1);
+	 				muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 			}
+	 			SteppeInds=c(muestraHoms,muestraHets);
+	 		}else{
+	 		}
+	 					
+	 	}else if(NbrHoms<=length(SteppeHoms) & NbrHets>(length(SteppeHets)+length(SteppeHetsBoth))){
+	 		muestraHoms=sample(SteppeHoms,NbrHoms);
+	 		muestraHets=sample(SteppeHets,length(SteppeHets)+length(SteppeHetsBoth));
+	 		RemainingFreq=0.54-(2*NbrHoms+length(SteppeHets)+length(SteppeHetsBoth))/(2*500);
+	 		minimo=abs(RemainingFreq-seq(0,min(length(SteppeHoms)-NbrHoms,500-length(muestraHoms)-length(muestraHets)),2)/(2*500));
+	 		Index=which(minimo==min(minimo));
+	 		if(length(SteppeHoms)>0){
+				muestraHomsAdditional=sample(SteppeHoms[setDifference(seq(0,length(SteppeHoms)-1,1),muestraHoms)],Index);
+			}else{
+				muestraHomsAdditional=NULL;
+			}	
+	 		SteppeInds=c(muestraHoms,muestraHets,muestraHomsAdditional); 
+	 					
+	 	}else if(NbrHoms>length(SteppeHoms) & NbrHets<=(length(SteppeHets)+length(SteppeHetsBoth))){
+	 		if(NbrHets<=length(SteppeHetsBoth)){
+	 			muestraHets=sample(SteppeHetsBoth,NbrHets);
+	 		}else{
+	 			muestraHetsBoth=sample(SteppeHetsBoth,length(SteppeHetsBoth));
+	 			muestraHetsSingle=sample(SteppeHets,NbrHets-length(SteppeHetsBoth));
+	 			muestraHets=c(muestraHetsBoth,muestraHetsSingle);
+	 		}
+	 		muestraHoms=sample(SteppeHoms,length(SteppeHoms));
+	 		RemainingFreq=0.54-(NbrHets+2*length(SteppeHoms))/(2*500);
+	 		minimo=abs(RemainingFreq-seq(0,min(length(SteppeHets)+length(SteppeHetsBoth)-NbrHets,500-length(muestraHoms)-length(muestraHets)),1)/(2*500));
+	 		Index=which(minimo==min(minimo));
+	 		if(length(c(SteppeHets,SteppeHetsBoth))>0){
+				muestraHetsAdditional=sample(c(SteppeHets,SteppeHetsBoth)[setDifference(seq(0,length(c(SteppeHets,SteppeHetsBoth))-1,1),muestraHets)],Index);
+			}else{
+				muestraHetsAdditional=NULL;
+			}	
+	 		SteppeInds=c(muestraHets,muestraHoms,muestraHetsAdditional); 
+	 						
+	 				
+	 	}else{
+	 		cat("Absent  \n");
+	 					
+	 		sim.simulationFinished();
+	 	}
+	 	
+	 	
+	 	// Extract then remaining Anats
+	 	AnatsHoms=which(M3==2);
+	 	AnatsHets=which(M3==1 & Msteppe3==0);
+	 	
+	 	AnatInds=NULL;
+	 	FreqAnatTmp=sum(M3[SteppeInds])/(500*2);
+	 	NewAnatTarget=0.36-FreqAnatTmp;
+	 				
+	 				
+	 	cat(NewAnatTarget+ "\t" + FreqAnatTmp+ "\t"+0.36+ "\t"+0.54+ "\t"+500+ "\t" + length(SteppeHetsBoth) + "\t"  + length(SteppeInds)+"\n");
+	 				
+
+	 	NewSize=(500-length(SteppeInds));
+	 	if(NewSize==0){
+	 		NewFreq=0;
+	 		NbrHoms=0;
+	 		NbrHets=0;
+	 	}else{
+	 		NewFreq=min((NewAnatTarget*500*2)/(2*NewSize),1.0);
+	 		NbrHoms=asInteger(round((NewFreq)*(NewFreq)*(NewSize)));
+	 		NbrHets=asInteger(round(2*(NewFreq)*(1-NewFreq)*(NewSize)));
+	 	}	 	 	
+	 	
+	 	
+	 	// IF NO NEED OF MORE ANAT INDS, THEN DO NOT DO ANYTHING
+	 				
+	 	if(NewAnatTarget<1/(2*500)){ 				
+	 		muestraHoms=sample(AnatsHoms,0);
+	 		muestraHets=sample(AnatsHets,0);
+	 		AnatInds=c(muestraHoms,muestraHets);
+	 					
+	 	// IF DO NOT HAVE ANY MORE INDIVIDUAL, DO NOT DO ANYTHING
+	 					
+	 				
+	 	}else if((500-length(SteppeInds))==0){
+	 		
+	 		muestraHoms=sample(AnatsHoms,0);
+	 		muestraHets=sample(AnatsHets,0);
+	 		AnatInds=c(muestraHoms,muestraHets);
+	 				
+	 	// IF NEED OF MORE ANATs INDS AND HAVE MORE, THEN IF HW FITS, USE HW	
+	 				
+	 	}else if(NbrHoms<=length(AnatsHoms) & NbrHets<=length(AnatsHets) & NewAnatTarget>=1/(2*500)){
+	 		
+	 		muestraHoms=sample(AnatsHoms,NbrHoms);
+	 		muestraHets=sample(AnatsHets,NbrHets);
+	 		AnatInds=c(muestraHoms,muestraHets);
+	 				
+	 	// IF NEED OF MORE ANATs INDS, AND HW DOES NOT FIT, CHOOSE AS MUCH AS YOU CAN WITH WHAT YOU HAVE
+	 				
+	 				
+	 	}else if(NbrHoms<=length(AnatsHoms) & NbrHets>length(AnatsHets)){
+	 		
+	 		muestraHets=sample(AnatsHets,length(AnatsHets));
+	 		muestraHoms=sample(AnatsHoms,NbrHoms);	 				
+	 		RemainingFreq=NewAnatTarget-(2*NbrHoms+length(AnatsHets))/(2*NewSize);
+	 		minimo=abs(RemainingFreq-seq(0,min(length(AnatsHoms)-NbrHoms,NewSize-length(muestraHoms)-length(muestraHets)),2)/(2*NewSize));
+	 		Index=which(minimo==min(minimo));
+	 		if(length(AnatsHoms)>0){
+	 			muestraHomsAdditional=sample(AnatsHoms[setDifference(seq(0,length(AnatsHoms)-1,1),muestraHoms)],Index);
+	 		}else{
+	 			muestraHomsAdditional=NULL;
+	 		}
+	 		AnatInds=c(muestraHoms,muestraHets,muestraHomsAdditional); 
+	 					
+	 	}else if(NbrHoms>length(AnatsHoms) & NbrHets<=length(AnatsHets)){	
+	 				
+	 		muestraHoms=sample(AnatsHoms,length(AnatsHoms));
+	 		muestraHets=sample(AnatsHets,NbrHets);
+	 		RemainingFreq=NewAnatTarget-(2*length(AnatsHoms)+NbrHets)/(2*NewSize);
+	 		minimo=abs(RemainingFreq-seq(0,min(length(AnatsHets)-NbrHets,NewSize-length(muestraHoms)-length(muestraHets)),1)/(2*NewSize));
+	 		Index=which(minimo==min(minimo));
+	 		if(length(AnatsHets)>0){	 					
+	 			muestraHetsAdditional=sample(AnatsHets[setDifference(seq(0,length(AnatsHets)-1,1),muestraHets)],Index);
+	 		}else{
+	 			muestraHetsAdditional=NULL;
+	 		}
+	 		AnatInds=c(muestraHets,muestraHoms,muestraHetsAdditional);
+	 					
+	 				
+	 	}else{
+	 		cat("Absent \n");
+	 		sim.simulationFinished();
+	 	}
+	 	
+	 	
+	 	
+	 	// Finally, extract non-Steppe and non-Anat remaining individuals
+	 	if((500-length(AnatInds)-length(SteppeInds)) > length(Others)){
+	 		
+	 		OthersInds1=sample(Others,length(Others));
+	 		NonOthers=which(Msteppe3>0 | M3>0);
+	 		OthersAdditional=sample(NonOthers[setDifference(seq(0,length(NonOthers)-1,1),c(AnatInds,SteppeInds))],(500-length(AnatInds)-length(SteppeInds))-length(Others));
+	 		OthersInds=c(OthersInds1,OthersAdditional);
+	 	}else{
+	 		OthersInds=sample(Others,500-length(AnatInds)-length(SteppeInds));
+	 	}		
+	 	
+	 	if(length(AnatInds)>0){
+	 		AnatInds1=AnatInds*2;
+	 		AnatInds2=(AnatInds*2+1);
+	 		AnatInds=c(AnatInds1,AnatInds2);
+	 	}
+	 	if(length(SteppeInds)>0){
+	 		SteppeInds1=SteppeInds*2;
+	 		SteppeInds2=(SteppeInds*2+1);
+	 		SteppeInds=c(SteppeInds1,SteppeInds2);
+	 	}
+
+	 	OthersInds1=OthersInds*2;
+	 	OthersInds2=(OthersInds*2+1);
+	 	OthersInds=c(OthersInds1,OthersInds2);
+	 	Sampleo2=c(AnatInds,SteppeInds,OthersInds);
+	 	Long=asInteger(length(Sampleo2)/2);
+ 							
+	 	MySampleIndsTmp = DATA[Sampleo2];
+
+
+
+		count=sum(c(MySamplep11,MySamplep12,MySamplep13,MySamplep14,MySamplep15).countOfMutationsOfType(m2));
+      freqp1=count/1000;
+      count=sum(c(MySamplep31,MySamplep32,MySamplep33,MySamplep34,MySamplep35).countOfMutationsOfType(m2));
+      freqp3=count/1000;
+
+      count=sum(MySampleIndsTmp.countOfMutationsOfType(m2));
+      freqp2=count/1000;
+                
+      count=sum(MySampleIndsTmp.countOfMutationsOfType(m4));
+      freqAncestryAnatp2=count/1000;
+                
+      count=sum(MySampleIndsTmp.countOfMutationsOfType(m5));
+      freqAncestrySteppep2=count/1000;
+                
+        
+
+      cat("p1Pres" + "\t" + freqp1 + "\n");
+      cat("p2Pres" + "\t" + freqp2 + "\n");
+      cat("p3Pres" + "\t" + freqp3 + "\n");
+		
+		cat("AncestryAnatp2" + "\t" + freqAncestryAnatp2 + "\n");
+		cat("AncestrySteppep2" + "\t" + freqAncestrySteppep2 + "\n");
+		cat("CarrierStatus" + "\t" + paste(MySampleIndsTmp.countOfMutationsOfType(m2), sep=" ") + "\n");
+		cat("CarrierStatusAnat" + "\t" + paste(MySampleIndsTmp.countOfMutationsOfType(m4), sep=" ") + "\n");
+		cat("CarrierStatusSteppe" + "\t" + paste(MySampleIndsTmp.countOfMutationsOfType(m5), sep=" ") + "\n");
+
+      mut = sim.mutationsOfType(m2);
+      pos=mut.position;
+      cat("position\t" + pos + "\n");
+
+      freq=sim.mutationFrequencies(p1, mut);
+      cat("p1 freq\t" + freq + "\n");
+      freq=sim.mutationFrequencies(p2, mut);
+      cat("p2 freq\t" + freq + "\n");
+      freq=sim.mutationFrequencies(p3, mut);
+      cat("p3 freq\t" + freq + "\n");
+
+		    
+		sim.simulationFinished();
+}
+		
