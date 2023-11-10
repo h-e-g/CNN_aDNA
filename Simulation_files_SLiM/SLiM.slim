@@ -66,7 +66,7 @@ initialize() {
 	
 	// Either obtain a simulated variant arising more than 100,000 years ago with its simulated AF or make it appear over the last 100,000 years ago
 	if($USEAFS==1){
-		AFS=readFile("/pasteur/zeus/projets/p02/IGSR/GASPARD/DATING_SELECTION/ZEUS/TMP_working_gaspard/SIMULATIONS/our_model/FREQ_FILE_allsim_kept_AFS1M-100K_nozeros.txt");
+		AFS=readFile("~/FREQ_FILE_allsim_kept_AFS1M-100K_nozeros.txt");
 		AFS2=asFloat(AFS[$AFSTOCHANGE]);
 		if(AFS2==0){
 			cat("Absent \n");
