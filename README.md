@@ -13,6 +13,7 @@ Code was written in SLiM and uses a well-established European demography for the
 Estimation:
 
 ABC and CNN estimation of selection strength (s) and time of onset of selection (T) are conducted using R
+R code for estimating selection parameters using ABC are provided in https://github.com/h-e-g/SLiM_aDNA_selection/
 
 
 
@@ -31,3 +32,4 @@ Ancient DNA metadata to define demography and run simulations can be found in ME
 Expected output: We provide an expected output when running ./ABC_SLIM.sh SETTINGS.sh for the pre-defined parameters in the shared files and the metadata provided in METADATA
 The ouptut is for 405 simulations each run on two separate jobs
 Software requirements: SLiM v3, R (+ dplyr package), perl
+
