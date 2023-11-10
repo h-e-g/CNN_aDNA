@@ -42,7 +42,7 @@ INPUT_SLIM="${WORK_DIR}/${SLIMNAME}"
 IFS='/' read -a array <<< "${INPUT_SLIM}"
 DEMOGRAPHY=${array[ ${#array[@]} - 1 ]}; ## name of the input file for SliM (v3)
 OUTPUT="${OUTPUTDIRECTORY}/SIMULATIONS/RESULTS/${DEMOGRAPHY}/${OUTPUTNAME}"				; ## to store the simulation files
-NSIM="2000" ; nJOB="2" ; ### simulations per job (NSIM) and number of jobs (nJOB)
+NSIM="405" ; nJOB="2" ; ### simulations per job (NSIM) and number of jobs (nJOB)
 
 ## PARAMETERS FOR ESTIMATING PULSE INTENSITIES (input values for Rscript 'ParametersToSimulateSLIM.R')
 thresQuality=50; # Get the XX% percentile of best covered samples
