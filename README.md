@@ -1,30 +1,32 @@
 # CNN_aDNA
-Deep estimation of the intensity and timing of selection from ancient genomes (Laval et al., BioRxiv 2023; https://doi.org/10.1101/2023.07.27.550703)
+ABC estimation of the intensity and timing of selection from ancient genomes (Kerner et al., Cell Genomics 2023; https://www.sciencedirect.com/science/article/pii/S2666979X22002117)
+Deep estimation based on convolutional neural networks (CNNs) (Laval et al., BioRxiv 2023; https://doi.org/10.1101/2023.07.27.550703)
 
+The intensity of selection	=	selection strength or selection coefficient (s)
+The timing of selection		=	time of onset of selection (T)
 
-
-Code for simulating ancient DNA-related data and estimating selection parameters as proposed by Laval et al., BioRxiv 2023
+Code for simulating ancient DNA-related data and estimating selection parameters as proposed by Kerner et al., Cell Genomics 2023 and Laval et al., BioRxiv 2023.
 
 Simulations:
 
-Code for simulating ancient DNA samples as described in Laval et al., BioRxiv 2023 and previously described in Kerner et al., Cell Genomics 2023. 
-Code was written in SLiM and uses a well-established European demography for the past 10,000 years. 
+	- Code for simulating ancient DNA samples as described in Kerner et al., Cell Genomics 2023
+	
+	- Code was written in SLiM and uses a well-established European demography for the past 10,000 years.
 
 Estimation:
 
-ABC and CNN estimation of selection strength (s) and time of onset of selection (T) are conducted using R
+	- ABC estimations of selection strength (s) and time of onset of selection (T) are conducted using R
+		R code for estimating selection parameters using ABC can be alo found at https://github.com/h-e-g/SLiM_aDNA_selection/
 
-R code for estimating selection parameters using ABC are provided in https://github.com/h-e-g/SLiM_aDNA_selection/
+	- CNN estimations of selection strength (s) and time of onset of selection (T) are conducted using python/keras/TensorFlow to set CNN algorithms
+
+
 
 Estimation is performed using as input data simulated data and real SNP data. 
 
-Simulated data is a matrix file where rows represent different simulations and columns carrier status {0,1} of a simulated sample; see OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_1/FreqaDNA_tmp.txt. This matrix is generated as explained below.
-
-Real data is genotype data from ancient samples formatted exactly as simulated data. As a test the first row of OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_2/FreqaDNA_tmp.txt can be used as a real SNP to estimate selection using simulated data from OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_1/FreqaDNA_tmp.txt
-
-
-
-
+	- Simulated data is a matrix file where rows represent different simulations and columns carrier status {0,1} of a simulated sample; see OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_1/FreqaDNA_tmp.txt. This matrix is generated as explained below.
+	
+	- Real data is genotype data from ancient samples formatted exactly as simulated data. As a test the first row of OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_2/FreqaDNA_tmp.txt can be used as a real SNP to estimate selection using simulated data from OUTPUT/SIMULATIONS/RESULTS/SLiM.slim/TEST/JOB_1/FreqaDNA_tmp.txt
 
 
 
