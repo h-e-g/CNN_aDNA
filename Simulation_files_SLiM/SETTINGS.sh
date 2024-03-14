@@ -7,8 +7,11 @@
 ## 3	- 	"submit_mainscript" file : copies softwares and files to be used in the simulation process to the folders (see above) and run parameter selection (call of draw_parameter.pl), which randomly selects parameters according to the defined ranges and includes them in the demographic model, which is run by SLiM v3, and frequency estimation (call of run_slim3.pl) file, which runs the demographic model (call of slim) and extracts frequencies at the different epochs.
 ## 3	-   Parameters chosen with draw_parameter.pl are saved in parameters.txt (one simulation by row) and frequencies (one simulation by row) extracted with run_slim3.pl to FreqaDNA_tmp.txt
 
-WORK_DIR="~/Files_For_Slim/"
-DIR_LOG="~/Files_For_Slim/logs"
+#WORK_DIR="~/Files_For_Slim/"
+#DIR_LOG="~/Files_For_Slim/logs"
+WORK_DIR=(`pwd`)
+DIR_LOG="$WORK_DIR/logs"
+
 mkdir -p ${DIR_LOG}
 ## FILES TO BE USED FOR PERFORMING SIMULATIONS
 MASTER_FILE="ABC_SLIM_submissionEurPop.sh"
@@ -41,8 +44,10 @@ SLIM_MODE="SIMULATE"; # DEFAULT OR SLIM_MODE="MAKEBURNIN"
 INPUT_SLIM="${WORK_DIR}/${SLIMNAME}"
 IFS='/' read -a array <<< "${INPUT_SLIM}"
 DEMOGRAPHY=${array[ ${#array[@]} - 1 ]}; ## name of the input file for SliM (v3)
-OUTPUT="${OUTPUTDIRECTORY}/SIMULATIONS/RESULTS/${DEMOGRAPHY}/${OUTPUTNAME}"				; ## to store the simulation files
+#OUTPUT="${OUTPUTDIRECTORY}/SIMULATIONS/RESULTS/${DEMOGRAPHY}/${OUTPUTNAME}"				; ## to store the simulation files
+OUTPUT="${OUTPUTDIRECTORY}/${DEMOGRAPHY}/${OUTPUTNAME}"				; ## to store the simulation files
 NSIM="405" ; nJOB="2" ; ### simulations per job (NSIM) and number of jobs (nJOB)
+###NSIM="1" ; nJOB="2" ; ### simulations per job (NSIM) and number of jobs (nJOB)
 
 ## PARAMETERS FOR ESTIMATING PULSE INTENSITIES (input values for Rscript 'ParametersToSimulateSLIM.R')
 thresQuality=50; # Get the XX% percentile of best covered samples
