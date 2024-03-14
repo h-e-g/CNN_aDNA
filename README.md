@@ -4,6 +4,7 @@ ABC estimation of the intensity and timing of selection from ancient genomes (Ke
 Deep estimation based on convolutional neural networks (CNNs) (Laval et al., BioRxiv 2023; https://doi.org/10.1101/2023.07.27.550703)
 
 The intensity of selection	=	selection strength or selection coefficient (s)
+
 The timing of selection		=	time of onset of selection (T)
 
 Code for simulating ancient DNA-related data and estimating selection parameters as proposed by Kerner et al., Cell Genomics 2023 and Laval et al., BioRxiv 2023.
