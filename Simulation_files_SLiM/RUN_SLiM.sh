@@ -83,6 +83,10 @@ submit_mainscript="submit_SIMULATION.sh"
 } > "$submit_mainscript"
 chmod +x "$submit_mainscript"
 
+echo -e "\tFolders and SLiM parameter files are ready for simulations."
+echo -e ""
+
+echo -e "\tWarning ! Exit script for safety before launching the simulations on your cluster. Update the code according to the parameters of your queueing system (here SLURM is used)."
 exit
 
 
