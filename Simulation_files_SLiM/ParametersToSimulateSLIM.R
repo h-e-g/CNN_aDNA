@@ -32,8 +32,8 @@ NameSubject="Version.ID"
 ## READ METADATA
 ################################################
 
-WORK_DIR="~/Files_For_Slim"
-FullFileName=sprintf('%s/v44.3_1240K_public.anno.Extracted.Ancestries.txt.Extracted.Ancestries.txt',WORK_DIR)
+#WORK_DIR="~/Files_For_Slim"
+#FullFileName=sprintf('%s/v44.3_1240K_public.anno.Extracted.Ancestries.txt.Extracted.Ancestries.txt',WORK_DIR)
 data = read.csv(FullFileName,header=T,sep="\t")
 data=data.frame(data)
 # rename columns

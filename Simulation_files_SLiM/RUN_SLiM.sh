@@ -29,7 +29,7 @@ echo -e "\t$FINALOUTPUT"
 iJOB=1
 while [ $iJOB -le $nJOB ]
 do	
-	if [ `expr $iJOB % 100` -eq 0 ]
+	if [ `expr $iJOB % 1` -eq 0 ]
 	then
 		echo -e "\t\tpreparing $FINALOUTPUT/JOB_$iJOB"
 	fi
@@ -49,7 +49,7 @@ done
 			
 			
 ## RUN MAIN MODEL, TO EVENTUALLY RUN SLIM FILE ON SIMULATED PARAMETERS (see 'draw_parameter.pl')
-submit_mainscript="submit_ESTIMATION.sh"
+submit_mainscript="submit_SIMULATION.sh"
 {
 	echo "#!/bin/bash";				
 	echo "#$ -cwd" ;  echo "#$ -N SLIM3" ;  echo "#$ -j y" ; echo "#$ -S /bin/bash"
@@ -63,7 +63,12 @@ submit_mainscript="submit_ESTIMATION.sh"
 		echo "cp draw_parameter.pl  $FINALOUTPUT/JOB_$TASK_ID"
 									
 		echo "cp run_slim3.pl  $FINALOUTPUT/JOB_$TASK_ID"
-					
+		
+		#Simulated AFS for simulating >100Kya mutations
+		echo "cp FREQ_FILE_allsim_kept_AFS1M-100K_nozeros.txt  $FINALOUTPUT/JOB_$TASK_ID"
+		
+		#Rscript to set parameters
+		echo "cp ParametersToSimulateSLIM.R  $FINALOUTPUT/JOB_$TASK_ID"					
 					
 		echo " "
 		echo "cd  $FINALOUTPUT/JOB_$TASK_ID"
@@ -77,6 +82,9 @@ submit_mainscript="submit_ESTIMATION.sh"
 	echo " "
 } > "$submit_mainscript"
 chmod +x "$submit_mainscript"
+
+exit
+
 
 ## JOBS ARE SPLITTED ACROSS THE CLUSTER		
 echo "1\tsbatch --qos=$QOS --array=1-$nJOB_main%1000 --mem-per-cpu=$CPU -o ${DIR_LOG}/slurm-%A_%a.out -e ${DIR_LOG}/slurm-%A_%a.err $submit_mainscript"

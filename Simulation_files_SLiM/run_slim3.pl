@@ -74,6 +74,7 @@ for ( $isim=0 ; $isim<$nsim ; ) {
 		fi"; 
 		system($command);
 	
+	
 		## remove screen files to save space
 		$command = "rm screen_".$isim.".txt tmp.txt ".$model.".".$isim;
 		system($command);				

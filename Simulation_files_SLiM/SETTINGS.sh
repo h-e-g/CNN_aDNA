@@ -12,6 +12,12 @@
 WORK_DIR=(`pwd`)
 DIR_LOG="$WORK_DIR/logs"
 
+DIR_METADATA="../METADATA"
+cd "$DIR_METADATA"
+DIR_METADATA=(`pwd`)
+cd "$WORK_DIR"
+
+
 mkdir -p ${DIR_LOG}
 ## FILES TO BE USED FOR PERFORMING SIMULATIONS
 MASTER_FILE="ABC_SLIM_submissionEurPop.sh"
@@ -21,7 +27,8 @@ PARAMETER_FILE="draw_parameter_submission_NoBurninEurPop.pl"
 SLIM_EXECUTABLE="slim"
 
 # METADATA (v44.3_1240K)
-FullFileName="${WORK_DIR}/v44.3_1240K_public.anno.Extracted.Ancestries.txt.Extracted.Ancestries.txt";
+#FullFileName="${WORK_DIR}/v44.3_1240K_public.anno.Extracted.Ancestries.txt.Extracted.Ancestries.txt";
+FullFileName="${DIR_METADATA}/v44.3_1240K_public.anno.Extracted.Ancestries.txt.Extracted.Ancestries.txt";
 NameAge="Date mean in BP [OxCal mu for a direct radiocarbon date, and average of range for a contextual date]"
 NameGroupID="GroupID"
 NameSubjectID="Master ID"
@@ -42,8 +49,9 @@ SLIMNAME="SLiM.slim"
 OUTPUTNAME="TEST"
 SLIM_MODE="SIMULATE"; # DEFAULT OR SLIM_MODE="MAKEBURNIN"
 INPUT_SLIM="${WORK_DIR}/${SLIMNAME}"
-IFS='/' read -a array <<< "${INPUT_SLIM}"
-DEMOGRAPHY=${array[ ${#array[@]} - 1 ]}; ## name of the input file for SliM (v3)
+#SIFS='/' read -a array <<< "${INPUT_SLIM}"
+#DEMOGRAPHY=${array[ ${#array[@]} - 1 ]}; ## name of the input file for SliM (v3)
+DEMOGRAPHY=${SLIMNAME}; ## name of the input file for SliM (v3)
 #OUTPUT="${OUTPUTDIRECTORY}/SIMULATIONS/RESULTS/${DEMOGRAPHY}/${OUTPUTNAME}"				; ## to store the simulation files
 OUTPUT="${OUTPUTDIRECTORY}/${DEMOGRAPHY}/${OUTPUTNAME}"				; ## to store the simulation files
 NSIM="405" ; nJOB="2" ; ### simulations per job (NSIM) and number of jobs (nJOB)

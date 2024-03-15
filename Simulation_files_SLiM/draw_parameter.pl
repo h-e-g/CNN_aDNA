@@ -125,7 +125,8 @@ my $max_NEEURORASI=400;
 my $rangeNEEURORASI=$max_NEEURORASI-$min_NEEURORASI;
 
 # Run Rscript to get extra parameters, particularly vector for the number of aDNA data, Anatolian proportions and intensity for pulses from normal distributions estimated from the data
-my $base = "/pasteur/zeus/projets/p02/IGSR/GASPARD/GUILLAUME_CNN/GITHUB/Files_For_Slim";
+#my $base = "/pasteur/zeus/projets/p02/IGSR/GASPARD/GUILLAUME_CNN/GITHUB/Files_For_Slim";
+my $base = ".";
 chomp $base;
 my $r_script= "ParametersToSimulateSLIM.R";
 my $path="$base/$r_script";
