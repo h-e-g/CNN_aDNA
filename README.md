@@ -32,9 +32,11 @@ The timing of selection		=	time of onset of selection (T)
 
 Simulations:
 
-- Code for simulating ancient DNA samples as described in Kerner et al., Cell Genomics 2023, stored in the Simulation_files_SLiM folder
+- Code for simulating ancient DNA samples as described in Kerner et al., Cell Genomics 2023.
 	
 - Code was written in SLiM and uses a well-established European demography for the past 10,000 years.
+
+- Code source for performing the simulations stored in the Simulation_files_SLiM folder.
 
 Estimation:
 
