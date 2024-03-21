@@ -10,6 +10,8 @@ Simulations:
 	
 - Code was written in SLiM and uses a well-established European demography for the past 10,000 years.
 
+- Software requirements: SLiM v3, R (+ dplyr package), perl
+
 -------
 
 On performing simulations (hierarchical file structure):
@@ -18,18 +20,14 @@ Read 'ABC_SLIM.sh' for details on running simulations
 To run:
 ./ABC_SLIM.sh SETTINGS.sh
 
-Simulations are performed according to the SLiM input file called "SLiM.slim"
+Simulations are performed according to the SLiM input file called "SLiM.slim". The simulation parameters are defined in SETTINGS.sh (e.g., number of jobs and number of simulations per job). Check SETTINGS.sh file for full list of pre-defined parameters.
 
-Simulation parameters are defined in SETTINGS.sh (e.g., number of jobs and number of simulations per job).
-
-Check SETTINGS.sh file for full list of pre-defined parameters.
-
-Directories need to be changed to local directories when running. Check all scripts have updated directories
+Important note: Directories need to be changed to local directories when running. Check all scripts have updated directories
 
 
 Ancient DNA metadata to run simulations can be found in METADATA/
 
-Expected output: We provide an expected output when running ./ABC_SLIM.sh SETTINGS.sh for the pre-defined parameters in the shared files and the metadata provided in METADATA
-The ouptut is for 405 simulations each run on two separate jobs
-Software requirements: SLiM v3, R (+ dplyr package), perl
+Expected output:
+
+We provide an expected output when running ./ABC_SLIM.sh SETTINGS.sh for the pre-defined parameters in the shared files and the metadata provided in METADATA. The ouptut is for 405 simulations each run on two separate jobs. 
 
