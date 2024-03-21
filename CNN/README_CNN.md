@@ -16,26 +16,17 @@ verbose:		To print some variables
 2 - Settings for the CNN architectures
 File that can be used to set the CNN architecture. Example of files to set the simplified CNN architecture, SETTINGS_CNN_architecture_simplified.txt
 
-Settings for convolution layers
-	Ex. Conv1D	28	10	my1Dconvolution_2
-	"Conv1D" calls for	keras.layers.Conv1D( 28 , kernel_size=10, input_shape=input_shape, name=name[i])
+Settings for convolution layers: Conv1D	28	10	my1Dconvolution_2. The sring "Conv1D" calls for	keras.layers.Conv1D( 28 , kernel_size=10, input_shape=input_shape, name=name[i])
 
-Settings for  Pooling layers
-	Ex. Pool1D	2	NA	myMaxPool_2
-	"Pool1D" calls for	keras.layers.MaxPooling1D(pool_size=poolsize)
+Settings for  Pooling layers: Pool1D	2	NA	myMaxPool_2. The string "Pool1D" calls for	keras.layers.MaxPooling1D(pool_size=poolsize)
 
-Settings for  Flaten layers
-	Ex. Flatten	NA	NA	myFlatten_1
-	"Flatten" calls for	layers.Flatten()(x)
+Settings for  Flaten layers: Flatten	NA	NA	myFlatten_1. The string "Flatten" calls for	layers.Flatten()(x)
 
-Settings for  Pooling layers
-	Ex. Dense	128	NA	myDense_1
-	"Dense" calls for	keras.layers.Dense(nbdense, activation=tf.nn.relu)(x)
+Settings for  dense layers: Dense	128	NA	myDense_1. The string "Dense" calls for	keras.layers.Dense(nbdense, activation=tf.nn.relu)(x)
 
 
 ###### Data files 
 We provide simulated and empirical files necessary for estimating the selection parameters for the lactase persistence variant (rs4988235, LCT-MCM6). These example files can be found in the folder LCT.
-
 
 1 - Training files.
 Files storing simulated data used to train the model
