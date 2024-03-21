@@ -22,6 +22,8 @@ Toy example : CNN predictions for the Lactase persistence allele (rs4988235, LCT
 
 "A_crossvalset_476800_200_params_POSSEL_SNP_rs4988235.READY.txt". List of the corresponding simulated parameters, see above.
 
+-----
+
 
 4 - ABC estimation files
 
