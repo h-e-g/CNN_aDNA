@@ -27,8 +27,8 @@ We provide simulated and empirical files necessary for estimating the selection 
 1 - Training files.
 Files storing simulated data used to train the model
 
-	a - Simulated 1D images : ex., "A_trainingset_476800_1D_grayscale_images_POSSEL_SNP_rs4988235.READY.txt". List of simulated 1D images with 1 image per raw. A 1D image is the list of 0 and 1, 0 being the ancestral allele, 1 being the derived allele. Here ancient individuals are sorted by age and are pseudo-haploids (1 allele er genotype) and modern individuals are diploids. 
-
+	a - Simulated 1D images : ex., "A_trainingset_476800_1D_grayscale_images_POSSEL_SNP_rs4988235.READY.txt". List of simulated 1D images with 1 image per raw.
+ A 1D image is the list of 0 and 1, 0 being the ancestral allele, 1 being the derived allele. Here ancient individuals are sorted by age and are pseudo-haploids (1 allele er genotype) and modern individuals are diploids. 
 	b - Simulated parameters : ex., "A_trainingset_476800_params_POSSEL_SNP_rs4988235.READY.txt". List of the corresponding simulated parameters (the labels of the simulated images). The column 1 is the selection coefficient. The column 2 is the the age of selection (the rank, ascending order, of the simulated generations in SLiM).
 
 Note: the simulated files provided were simulated according the number and the age of the ancient individuals with genotypes for the lactase persistence allele.
