@@ -27,31 +27,21 @@ We provide simulated and empirical files necessary for estimating the selection 
 1 - Training files.
 Files storing simulated data used to train the model
 
-	a - Simulated 1D images : ex., "A_trainingset_476800_1D_grayscale_images_POSSEL_SNP_rs4988235.READY.txt"
-list of simulated 1D images with 1 image per raw. A 1D image is the list of 0 and 1, 0 being the ancestral allele, 1 being the derived allele. Here ancient individuals are sorted by age and are pseudo-haploids (1 allele er genotype) and modern individuals are diploids. 
+	a - Simulated 1D images : ex., "A_trainingset_476800_1D_grayscale_images_POSSEL_SNP_rs4988235.READY.txt". List of simulated 1D images with 1 image per raw. A 1D image is the list of 0 and 1, 0 being the ancestral allele, 1 being the derived allele. Here ancient individuals are sorted by age and are pseudo-haploids (1 allele er genotype) and modern individuals are diploids. 
 
-	b - Simulated parameters : ex., "A_trainingset_476800_params_POSSEL_SNP_rs4988235.READY.txt"  
-list of the corresponding simulated parameters (the labels of the simulated images)
-The column 1 is the selection coefficient. 
-The column 2 is the the age of selection (the rank, ascending order, of the simulated generations in SLiM).
+	b - Simulated parameters : ex., "A_trainingset_476800_params_POSSEL_SNP_rs4988235.READY.txt". List of the corresponding simulated parameters (the labels of the simulated images). The column 1 is the selection coefficient. The column 2 is the the age of selection (the rank, ascending order, of the simulated generations in SLiM).
 
 Note: the simulated files provided were simulated according the number and the age of the ancient individuals with genotypes for the lactase persistence allele.
 
 2 - Cross validations files
 Files storing simulated data used to assess the accuracy of the CNN predictions. These simulated data are used as being empirical data for which the value of the parameters are known.
 For each of these simulated data, the CNN_aDNA.py script estimates the s and T values using the model trained from the simulated data shown above.
-  a - Simulated 1D images : ex., "A_crossvalset_476800_200_1D_grayscale_images_POSSEL_SNP_rs4988235.READY.txt"
-list of simulated 1D images with 1 image per raw, see above.
-
-  a - Simulated parameters : ex., "A_crossvalset_476800_200_params_POSSEL_SNP_rs4988235.READY.txt"
-list of the simulated parameters corresponding to the simulated images used for cross validations, see above.
-
+	a - Simulated 1D images : ex., "A_crossvalset_476800_200_1D_grayscale_images_POSSEL_SNP_rs4988235.READY.txt". List of simulated 1D images with 1 image per raw, see above.
+	b - Simulated parameters : ex., "A_crossvalset_476800_200_params_POSSEL_SNP_rs4988235.READY.txt". List of the simulated parameters corresponding to the simulated images used for cross validations, see above.
 
 3 - Empirical files
 1D image for the lactase persistence allele (same shape as for the simulated 1D image shown above). 
 "empirical_1D_image_rs4988235.txt"
-
-
 
 4 - Files for ABC estimations
 We also provide the alle frequencies trajectories to perform the ABC estimations of s and T
