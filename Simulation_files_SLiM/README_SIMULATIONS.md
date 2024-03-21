@@ -10,6 +10,7 @@ Simulations:
 	
 - Code was written in SLiM and uses a well-established European demography for the past 10,000 years.
 
+-------
 
 On performing simulations (hierarchical file structure):
 Read 'ABC_SLIM.sh' for details on running simulations
