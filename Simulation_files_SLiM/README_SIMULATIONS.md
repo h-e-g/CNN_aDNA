@@ -14,7 +14,7 @@ Simulations:
 
 -------
 
-On performing simulations (hierarchical file structure):
+Running simulations (hierarchical file structure):
 
 ./ABC_SLIM.sh SETTINGS.sh
 
