@@ -7,7 +7,6 @@ Files for the CNN estimations
 Tabulated text file to set various options for computations. 
 
 	analyse:		NORMAL / CUSTOM ( to handle the files given in example, see below )
-
 	usage:			PREDICTION (for performing predictions from a trained model )/ TRAINING (for training a model performing predictions )
 	name_model:		For giving a name of the CNN model
 	verbose:		To print some variables
@@ -17,11 +16,8 @@ Tabulated text file to set various options for computations.
 File that can be used to set the CNN architecture. Example of files to set the simplified CNN architecture, SETTINGS_CNN_architecture_simplified.txt
 
 	Settings for convolution layers: Conv1D	28	10	my1Dconvolution_2. The sring "Conv1D" calls for	keras.layers.Conv1D( 28 , kernel_size=10, input_shape=input_shape, name=name[i])
-
 	Settings for  Pooling layers: Pool1D	2	NA	myMaxPool_2. The string "Pool1D" calls for	keras.layers.MaxPooling1D(pool_size=poolsize)
-
 	Settings for  Flaten layers: Flatten	NA	NA	myFlatten_1. The string "Flatten" calls for	layers.Flatten()(x)
-
 	Settings for  dense layers: Dense	128	NA	myDense_1. The string "Dense" calls for	keras.layers.Dense(nbdense, activation=tf.nn.relu)(x)
 
 
