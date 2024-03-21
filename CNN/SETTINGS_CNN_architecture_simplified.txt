@@ -1,0 +1,11 @@
+NumEpochs	3
+Conv1D	28	10	my1Dconvolution_2
+Pool1D	2	NA	NA
+Conv1D	28	5	my1Dconvolution_3
+Conv1D	28	5	my1Dconvolution_4
+Conv1D	28	5	my1Dconvolution_5
+Pool1D	2	NA	NA
+Flatten	NA	NA	NA
+Dense	128	NA	NA
+Dense	256	NA	NA
+Dense	512	NA	NA
