@@ -28,6 +28,8 @@ Tabulated text file that can be used to set the CNN architecture. Example of fil
 	- Settings for  dense layers: Dense	128	NA	myDense_1. The string "Dense" calls for	keras.layers.Dense(nbdense, activation=tf.nn.relu)(x)
 
 
+-----
+
 ###### Data files 
 We provide simulated and empirical files necessary for estimating the selection parameters for the lactase persistence variant (rs4988235, LCT-MCM6). These example files can be found in the folder LCT.
 
@@ -47,7 +49,6 @@ Files storing simulated data used to assess the accuracy of the CNN predictions.
 
 3 - Empirical files.
 "empirical_1D_image_rs4988235.txt", the 1D image for the lactase persistence allele (same shape as for the simulated 1D image shown above).
-
 
 --------------
 ###### ABC predictions of the intensity and the age of selection using the R script "ABC_freqTraj.r" (R package ABC, Csillery et. al, https://cran.r-project.org/web/packages/abc/index.html).
