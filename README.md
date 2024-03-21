@@ -1,5 +1,4 @@
 # CNN_aDNA
-----------
 
 -------
 ABC estimation of the intensity and timing of selection from ancient genomes (Kerner et al., Cell Genomics 2023; https://www.sciencedirect.com/science/article/pii/S2666979X22002117).
