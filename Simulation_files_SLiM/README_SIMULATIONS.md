@@ -1,4 +1,4 @@
-#### Simulations of ancient individuals
+#### Simulations of ancient and modern genotypes
 
 Code for simulating ancient DNA-related data as proposed by Kerner et al., Cell Genomics 2023.
 
@@ -15,16 +15,15 @@ Simulations:
 -------
 
 On performing simulations (hierarchical file structure):
-Read 'ABC_SLIM.sh' for details on running simulations
 
-To run:
 ./ABC_SLIM.sh SETTINGS.sh
 
-Simulations are performed according to the SLiM input file called "SLiM.slim". The simulation parameters are defined in SETTINGS.sh (e.g., number of jobs and number of simulations per job). Check SETTINGS.sh file for full list of pre-defined parameters. Ancient DNA metadata to run simulations can be found in METADATA/
+Read 'ABC_SLIM.sh' for details on running simulations. Simulations are performed according to the SLiM input file called "SLiM.slim". The simulation parameters are defined in SETTINGS.sh (e.g., number of jobs and number of simulations per job). Check SETTINGS.sh file for full list of pre-defined parameters. Ancient DNA metadata to run simulations can be found in METADATA/
 
 **Important note: Directories need to be changed to local directories when running. Check all scripts have updated directories
 
 
+-------
 
 Expected output:
 
