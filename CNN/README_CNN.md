@@ -6,7 +6,6 @@ Files for the CNN estimations
 1 - SETTINGS_MAIN.txt
 Tabulated text file to set various options for computations. 
 
------------
 #Name_option	#value
 "analyse"	CUSTOM
 "usage"	PREDICTION
@@ -17,7 +16,7 @@ Tabulated text file to set various options for computations.
 "snp_file"	My_empirical_image_for_a_variant.txt
 "name_model"	My_CNN_architecture
 "verbose"	VERBOSE
--------------
+
 
 analyse:		NORMAL / CUSTOM ( to handle the files given in example, see below ) 
 usage:			PREDICTION (for performing predictions from a trained model )/ TRAINING (for training a model performing predictions )
@@ -28,7 +27,6 @@ verbose:		To print some variables
 2 - Settings for the CNN architectures
 File that can be used to set the CNN architecture. Example of files to set the simplified CNN architecture, SETTINGS_CNN_architecture_simplified.txt
 
------------
 NumEpochs	3
 Conv1D	28	10	my1Dconvolution_2
 Pool1D	2	NA	myMaxPool_2
@@ -40,7 +38,6 @@ Flatten	NA	NA	myFlatten_1
 Dense	128	NA	myDense_1
 Dense	256	NA	myDense_2
 Dense	512	NA	myDense_3
--------------
 
 Settings for convolution layers
 	Ex. Conv1D	28	10	my1Dconvolution_2
