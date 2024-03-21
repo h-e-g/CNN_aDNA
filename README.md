@@ -28,7 +28,7 @@ The intensity of selection	=	selection strength or selection coefficient (s)
 
 The timing of selection		=	time of onset of selection (T)
 
-Code for simulating ancient DNA-related data and estimating selection parameters as proposed by Kerner et al., Cell Genomics 2023 and Laval et al., BioRxiv 2023.
+
 
 Simulations:
 
