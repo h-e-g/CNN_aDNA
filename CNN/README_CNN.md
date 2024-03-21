@@ -53,9 +53,9 @@ Files storing simulated data used to assess the accuracy of the CNN predictions.
 --------------
 
 
-###### ABC predictions using the R script "ABC_freqTraj.r" (R package ABC, Csillery et. al, https://cran.r-project.org/web/packages/abc/index.html).
+###### ABC predictions
 
-Running the ABC predictions with CNN_aDNA.py
+Running the ABC predictions with the R script "ABC_freqTraj.r" (R package ABC, Csillery et. al, https://cran.r-project.org/web/packages/abc/index.html)
 
 ./RUN_CNN_ABC.sh
 
