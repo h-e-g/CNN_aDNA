@@ -2,8 +2,8 @@
 
 ##### CNN predictions of the intensity and the age of selection using the python script "CNN_aDNA.py" (Keras, TensorFlow).
 
+Running the CNN predictions with CNN_aDNA.py
 
-Running the python script CNN_aDNA.py
 ./RUN_CNN_aDNA.sh
 
 Files for the CNN estimations 
@@ -47,6 +47,11 @@ Files storing simulated data used to assess the accuracy of the CNN predictions.
 
 3 - Empirical files.
 "empirical_1D_image_rs4988235.txt", the 1D image for the lactase persistence allele (same shape as for the simulated 1D image shown above). 
+
+###### ABC predictions of the intensity and the age of selection using the R script script "ABC_freqTraj.r" (Keras, TensorFlow).
+Running the CNN predictions with CNN_aDNA.py
+
+./RUN_CNN_aDNA.sh
 
 4 - Files for ABC estimations.
 We also provide the alle frequencies trajectories to perform the ABC estimations of s and T.
