@@ -22,7 +22,7 @@ To run:
 
 Simulations are performed according to the SLiM input file called "SLiM.slim". The simulation parameters are defined in SETTINGS.sh (e.g., number of jobs and number of simulations per job). Check SETTINGS.sh file for full list of pre-defined parameters. Ancient DNA metadata to run simulations can be found in METADATA/
 
-Important note: Directories need to be changed to local directories when running. Check all scripts have updated directories
+**Important note: Directories need to be changed to local directories when running. Check all scripts have updated directories
 
 
 
