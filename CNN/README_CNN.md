@@ -41,7 +41,8 @@ Files storing simulated data used to assess the accuracy of the CNN predictions.
 "empirical_1D_image_rs4988235.txt", the 1D image for the lactase persistence allele (same shape as for the simulated 1D image shown above). 
 
 4 - Files for ABC estimations.
-We also provide the alle frequencies trajectories to perform the ABC estimations of s and T
+We also provide the alle frequencies trajectories to perform the ABC estimations of s and T.
+
 	a - "A_abc_trainingset_476800_freqTraj_POSSEL_SNP_rs4988235.READY.txt":		simulated trajectories corresponding to the simulated data used to train the CNN (see above).
 	b- "A_abc_crossvalset_476800_200_freqTraj_POSSEL_SNP_rs4988235.READY.txt:	simulated trajectories corresponding to the simulated data used for cross validations (see above).
 Note: the simulated values of parameters are stored in the "A_trainingset_476800_params_POSSEL_SNP_rs4988235.READY.txt" and "A_crossvalset_476800_200_params_POSSEL_SNP_rs4988235.READY.txt" files (see above).
