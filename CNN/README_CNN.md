@@ -1,4 +1,11 @@
 
+
+##### CNN prediction from a python script "CNN_aDNA.py" (Keras, TensorFlow).
+
+
+Running the python script CNN_aDNA.py
+./RUN_CNN_aDNA.sh
+
 Files for the CNN estimations 
 
 ##### Setting files
