@@ -7,8 +7,6 @@ Running the CNN predictions with CNN_aDNA.py
 ./RUN_CNN_aDNA.sh
 
 ------
-#####
-
 
 
 ##### Setting files
