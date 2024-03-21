@@ -10,6 +10,20 @@ Deep estimation based on convolutional neural networks (CNNs) (Laval et al., Bio
 ----
 
 
+
+------
+
+ Software requirements:
+
+- Simulations: SLiM v3, R (+ dplyr package), perl
+
+- Estimations: Python (+ Keras, TenorFlow), R (+ abc package), perl
+
+-------
+
+
+
+
 The intensity of selection	=	selection strength or selection coefficient (s)
 
 The timing of selection		=	time of onset of selection (T)
