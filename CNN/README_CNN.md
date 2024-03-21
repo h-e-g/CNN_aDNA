@@ -1,6 +1,6 @@
 
 
-##### CNN prediction from a python script "CNN_aDNA.py" (Keras, TensorFlow).
+##### CNN predictions of the intensity and the age of selection using the python script "CNN_aDNA.py" (Keras, TensorFlow).
 
 
 Running the python script CNN_aDNA.py
