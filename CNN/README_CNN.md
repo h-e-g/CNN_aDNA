@@ -6,11 +6,11 @@ Files for the CNN estimations
 1 - SETTINGS_MAIN.txt
 Tabulated text file to set various options for computations. 
 
-analyse:		NORMAL / CUSTOM ( to handle the files given in example, see below )
+	analyse:		NORMAL / CUSTOM ( to handle the files given in example, see below )
 
-usage:			PREDICTION (for performing predictions from a trained model )/ TRAINING (for training a model performing predictions )
-name_model:		For giving a name of the CNN model
-verbose:		To print some variables
+	usage:			PREDICTION (for performing predictions from a trained model )/ TRAINING (for training a model performing predictions )
+	name_model:		For giving a name of the CNN model
+	verbose:		To print some variables
 
 
 2 - Settings for the CNN architectures
