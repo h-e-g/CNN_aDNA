@@ -55,7 +55,7 @@ Files storing simulated data used to assess the accuracy of the CNN predictions.
 
 Running the ABC predictions with CNN_aDNA.py
 
-./RUN_CNN_aDNA.sh
+./RUN_CNN_ABC.sh
 
 4 - Files for ABC estimations.
 We also provide the alle frequencies trajectories to perform the ABC estimations of s and T.
