@@ -13,6 +13,7 @@ Toy example : CNN predictions for the Lactase persistence allele (rs4988235, LCT
 3 - CNN Cross validations files
 
 "A_crossvalset_476800_200_1D_grayscale_images_POSSEL_SNP_rs4988235.READY.txt". List of simulated 1D images as being empirical data for which the value of the parameters are known.
+
 "A_crossvalset_476800_200_params_POSSEL_SNP_rs4988235.READY.txt". List of the corresponding simulated parameters, see above.
 
 
