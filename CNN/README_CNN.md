@@ -6,21 +6,6 @@ Files for the CNN estimations
 1 - SETTINGS_MAIN.txt
 Tabulated text file to set various options for computations. 
 
-#Name_option	#value
-
-"analyse"	CUSTOM
-
-"usage"	PREDICTION
-
-"file_sim_image"	My_simulated_image_for_training.txt
-"file_sim_param"	My_simulated_params_for_training.txt	
-"file_cross_image"	My_simulated_images_for_cross_validations.txt
-"file_cross_param"	My_simulated_params_for_cross_validations.txt	
-"snp_file"	My_empirical_image_for_a_variant.txt
-"name_model"	My_CNN_architecture
-"verbose"	VERBOSE
-
-
 analyse:		NORMAL / CUSTOM ( to handle the files given in example, see below ) 
 usage:			PREDICTION (for performing predictions from a trained model )/ TRAINING (for training a model performing predictions )
 name_model:		For giving a name of the CNN model
