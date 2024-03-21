@@ -27,7 +27,6 @@ Tabulated text file that can be used to set the CNN architecture. Example of fil
 	- Settings for  Flaten layers: Flatten	NA	NA	myFlatten_1. The string "Flatten" calls for	layers.Flatten()(x)
 	- Settings for  dense layers: Dense	128	NA	myDense_1. The string "Dense" calls for	keras.layers.Dense(nbdense, activation=tf.nn.relu)(x)
 
-
 -----
 
 ###### Data files 
@@ -51,14 +50,15 @@ Files storing simulated data used to assess the accuracy of the CNN predictions.
 "empirical_1D_image_rs4988235.txt", the 1D image for the lactase persistence allele (same shape as for the simulated 1D image shown above).
 
 --------------
-###### ABC predictions of the intensity and the age of selection using the R script "ABC_freqTraj.r" (R package ABC, Csillery et. al, https://cran.r-project.org/web/packages/abc/index.html).
---------------
+
+
+###### ABC predictions using the R script "ABC_freqTraj.r" (R package ABC, Csillery et. al, https://cran.r-project.org/web/packages/abc/index.html).
 
 Running the ABC predictions with CNN_aDNA.py
 
 ./RUN_CNN_ABC.sh
 
-4 - Files for ABC estimations.
+1 - Files for ABC estimations.
 We also provide the alle frequencies trajectories to perform the ABC estimations of s and T.
 
 	- "A_abc_real_data_freqTraj_rs4988235.txt". Empirical trajectories for the lactase persistence variant (rs4988235, LCT-MCM6).
