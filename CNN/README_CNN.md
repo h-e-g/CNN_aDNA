@@ -7,8 +7,11 @@ Files for the CNN estimations
 Tabulated text file to set various options for computations. 
 
 #Name_option	#value
+
 "analyse"	CUSTOM
+
 "usage"	PREDICTION
+
 "file_sim_image"	My_simulated_image_for_training.txt
 "file_sim_param"	My_simulated_params_for_training.txt	
 "file_cross_image"	My_simulated_images_for_cross_validations.txt
