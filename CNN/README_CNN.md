@@ -16,18 +16,6 @@ verbose:		To print some variables
 2 - Settings for the CNN architectures
 File that can be used to set the CNN architecture. Example of files to set the simplified CNN architecture, SETTINGS_CNN_architecture_simplified.txt
 
-NumEpochs	3
-Conv1D	28	10	my1Dconvolution_2
-Pool1D	2	NA	myMaxPool_2
-Conv1D	28	5	my1Dconvolution_3
-Conv1D	28	5	my1Dconvolution_4
-Conv1D	28	5	my1Dconvolution_5
-Pool1D	2	NA	myMaxPool_3
-Flatten	NA	NA	myFlatten_1
-Dense	128	NA	myDense_1
-Dense	256	NA	myDense_2
-Dense	512	NA	myDense_3
-
 Settings for convolution layers
 	Ex. Conv1D	28	10	my1Dconvolution_2
 	"Conv1D" calls for	keras.layers.Conv1D( 28 , kernel_size=10, input_shape=input_shape, name=name[i])
