@@ -57,7 +57,8 @@ name_model is the name of the CNN model defined by users in the setting file 'SE
 2 - for emprical data.
 Tabulated text file that stores the CNN predictions for the real datasets.
 snp_name is the name of the real variant analyzed read in the file '0-Variant_analyzed.txt' by the script 'RUN_CNN-ADNA.sh'
-	raw files of the CNN predisction s and T
+
+	raw files of the CNN predictions of s and T
 	- /crossval/empirical_validation_pred_' + snp_name + '_' + name_model + '.txt' (same columns as described above, only true values are missing)
 	raw files of the posterior distributions of s and T
 	- /crossval/empirical_validation_posterior_selcoeff_' + snp_name + '_' + name_model + '.txt'
