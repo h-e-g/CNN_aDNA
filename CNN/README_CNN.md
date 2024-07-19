@@ -36,6 +36,8 @@ Change CNN_aDNA.py to modify it.
 
 1 - for cross validations.
 Tabulated text file that stores the CNN predictions for the simulated pseudo-emprical datasets.
+NOTE: Two output layers of 100 neurons each are used to obtain joint estimations of s and T. Consequently, s and T were thus discretized in 100 bins, each being an integer varrying beween 0 and 99.
+s(or T)    = min +( bin * ( (max-min)/numbin) )
 name_model is the name of the CNN model defined by users in the setting file 'SETTINGS_MAIN.txt'. Here, it was set to be 'My_CNN_architecture'.
 
 	- '/crossval/pred_crossvalidation_' + name_model + '.txt'
@@ -53,6 +55,7 @@ name_model is the name of the CNN model defined by users in the setting file 'SE
 	column 12	"cnn_t_post_2"	posterior average of T (same value as in column 7)	
 	column 13	"cnn_t_ICmin"	95% CI lower bound of T (from posterior distribution)
 	column 14	"cnn_t_ICmax"	95% CI higher bound of T (from posterior distribution)
+
 
 2 - for emprical data.
 Tabulated text file that stores the CNN predictions for the real datasets.
