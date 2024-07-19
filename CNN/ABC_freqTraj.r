@@ -66,8 +66,8 @@ Npseudoempricial=200
 	stat	=tmpstat
 	par		=tmppar
 	
-	output   =c( paste0(input_folder,"/crossval/abc_estimations_477k_mode_noAncestry_",variant,"_avecEPOCH6_gaspardABC.txt") )	
-	posterior=c( paste0(input_folder,"/crossval/abc_posteriors_477k_mode_noAncestry_",variant,"_avecEPOCH6_gaspardABC.txt") )
+	output   =c( paste0(input_folder,"/crossval/abc_estimations_",variant,".txt") )	
+	posterior=c( paste0(input_folder,"/crossval/abc_posteriors_",variant,".txt") )
 	
 	
 }else{ 									
@@ -80,7 +80,7 @@ Npseudoempricial=200
 	stat	=tmpstat
 	par		=tmppar
 		
-	output   =c( paste0(input_folder,"/crossval/abc_estimations_477k_mode_noAncestry_crossvalidation_avecEPOCH6_gaspardABC.txt") )
+	output   =c( paste0(input_folder,"/crossval/abc_estimations_crossvalidation.txt") )
 }
 
 
