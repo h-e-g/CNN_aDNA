@@ -36,6 +36,7 @@ Change CNN_aDNA.py to modify it.
 
 1 - for cross validations.
 Tabulated text file that stores the CNN predictions for the simulated pseudo-emprical datasets.
+name_model is the name of the CNN model defined by users in the setting file 'SETTINGS_MAIN.txt'. Here, it was set to be 'My_CNN_architecture'.
 
 	- '/crossval/pred_crossvalidation_' + name_model + '.txt'
 	column 1	"true_s"		True s value ( value used to simulated pseudo-empirical data for cross s)
@@ -55,13 +56,13 @@ Tabulated text file that stores the CNN predictions for the simulated pseudo-emp
 
 2 - for emprical data.
 Tabulated text file that stores the CNN predictions for the real datasets.
-
-	- '/crossval/empirical_validation_pred_' + snp_name + '_' + name_model + '.txt'
-same columns as described above (only true values are missing)
-
-	- '/crossval/empirical_validation_posterior_selcoeff_' + snp_name + '_' + name_model + '.txt'
-'/crossval/empirical_validation_posterior_onsetsel_' + snp_name + '_' + name_model + '.txt'
-raw files of the posterior distributions of s and T
+snp_name is the name of the real variant analyzed read in the file '0-Variant_analyzed.txt' by the script 'RUN_CNN-ADNA.sh'
+	raw files of the CNN predisction s and T
+	- /crossval/empirical_validation_pred_' + snp_name + '_' + name_model + '.txt' (same columns as described above, only true values are missing)
+	raw files of the posterior distributions of s and T
+	- /crossval/empirical_validation_posterior_selcoeff_' + snp_name + '_' + name_model + '.txt'
+	- /crossval/empirical_validation_posterior_onsetsel_' + snp_name + '_' + name_model + '.txt'
+	
 
 
 -----
