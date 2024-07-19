@@ -39,13 +39,13 @@ Tabulated text file that stores the CNN predictions for the simulated pseudo-emp
 name_model is the name of the CNN model defined by users in the setting file 'SETTINGS_MAIN.txt'. Here, it was set to be 'My_CNN_architecture'.
 
 	- '/crossval/pred_crossvalidation_' + name_model + '.txt'
-	column 1	"true_s"		True s value ( value used to simulated pseudo-empirical data for cross s)
-	column 2	"cnn_s"			maximum likelihood s value
-	column 3	"l_max_s"		corresponding likelihood 
+	column 1	"true_s"	True s value ( value used to simulated pseudo-empirical data for cross s)
+	column 2	"cnn_s"		maximum likelihood s value
+	column 3	"l_max_s"	corresponding likelihood 
 	column 4	"cnn_s_post"	posterior average of s (from posterior distribution)
-	column 5	"true_t"		True T value ( value used to simulated pseudo-empirical data for cross s)		
-	column 6	"cnn_t"			maximum likelihood T value		
-	column 7	"l_max_t"		corresponding likelihood 	
+	column 5	"true_t"	True T value ( value used to simulated pseudo-empirical data for cross s)		
+	column 6	"cnn_t"		maximum likelihood T value		
+	column 7	"l_max_t"	corresponding likelihood 	
 	column 8	"cnn_t_post"	posterior average of T (from posterior distribution)
 	column 9	"cnn_s_post_2"	posterior average of s (same value as in column 4)
 	column 10	"cnn_s_ICmin"	95% CI lower bound of s (from posterior distribution)
