@@ -26,7 +26,7 @@ Deep estimation based on convolutional neural networks (CNNs) (Laval et al., Bio
 
 The intensity of selection	=	selection strength or selection coefficient (s)
 
-The timing of selection		=	time of onset of selection (T)
+The timing of selection		=	time of the onset of selection (T)
 
 
 
