@@ -30,7 +30,7 @@ The timing of selection		=	time of the onset of selection (T)
 
 
 
-Simulations:
+Computer simulations of ABC and CNN training datasets:
 
 - Code for simulating ancient DNA samples as described in Kerner et al., Cell Genomics 2023.
 	
@@ -38,11 +38,11 @@ Simulations:
 
 - Code source for performing the simulations stored in the Simulation_files_SLiM folder.
 
-Estimation:
+Estimations of s and T :
 
-- ABC estimations of s and T are conducted using R (R code for estimating selection parameters using ABC can be alo found at https://github.com/h-e-g/SLiM_aDNA_selection/).
+- ABC estimations are conducted using R (R code for estimating selection parameters using ABC can be alo found at https://github.com/h-e-g/SLiM_aDNA_selection/).
 
-- CNN estimations of s and T are conducted using python/keras/TensorFlow.
+- CNN estimations are conducted using python/keras/TensorFlow.
 
 - Code source for performing ABC and CNN predictions are stored in the CNN folder.
 
