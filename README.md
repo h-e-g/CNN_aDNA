@@ -40,9 +40,9 @@ Simulations:
 
 Estimation:
 
-- ABC estimations of selection strength (s) and time of onset of selection (T) are conducted using R (R code for estimating selection parameters using ABC can be alo found at https://github.com/h-e-g/SLiM_aDNA_selection/).
+- ABC estimations of s and T are conducted using R (R code for estimating selection parameters using ABC can be alo found at https://github.com/h-e-g/SLiM_aDNA_selection/).
 
-- CNN estimations of selection strength (s) and time of onset of selection (T) are conducted using python/keras/TensorFlow.
+- CNN estimations of s and T are conducted using python/keras/TensorFlow.
 
-- Code source for performing CNN and also ABC estimations of s and T stored in the CNN folder.
+- Code source for performing ABC and CNN predictions are stored in the CNN folder.
 
