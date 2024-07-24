@@ -17,7 +17,7 @@ Deep estimation based on convolutional neural networks (CNNs) (Laval et al., Bio
 
 - Simulations: SLiM v3, R (+ dplyr package), perl
 
-- Estimations: Python (+ Keras, TenorFlow), R (+ abc package), perl
+- Estimations: Python (+ Keras, TensorFlow), R (+ abc package), perl
 
 -------
 
