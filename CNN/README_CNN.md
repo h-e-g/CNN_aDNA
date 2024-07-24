@@ -11,7 +11,7 @@ Running the CNN predictions with CNN_aDNA.py
 
 ##### Setting files
 
-1 - SETTINGS_MAIN.txt
+1 - SETTINGS_MAIN.txt.
 A tabulated text file to set various options for computations. 
 
 	- analyse:		NORMAL / CUSTOM ( to handle the files given in example, see below )
