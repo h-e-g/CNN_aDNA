@@ -36,7 +36,7 @@ Change CNN_aDNA.py to modify it. Note that in the CNN_aDNA architecture two outp
 
 1 - For cross validations.
 CNN_aDNA.py outputs a tabulated text file storing the CNN predictions for the simulated pseudo-emprical datasets. 
-"name_model" is the name of the CNN model defined by users in the setting file 'SETTINGS_MAIN.txt'. Here, it was set to be 'My_CNN_architecture'.
+'name_model' is the name of the CNN model defined by users in the setting file 'SETTINGS_MAIN.txt'. name_model
 
 	- '/crossval/pred_crossvalidation_' + name_model + '.txt'
 	column 1	"true_s"	True s value ( value used to simulated pseudo-empirical data for cross s)
@@ -57,7 +57,7 @@ CNN_aDNA.py outputs a tabulated text file storing the CNN predictions for the si
 
 2 - For emprical data.
 CNN_aDNA.py outputs a tabulated text file storing the CNN predictions for a real dataset.
-"snp_name" is the name of the real variant analyzed read in the file '0-Variant_analyzed.txt' by the script 'RUN_CNN-ADNA.sh'
+'snp_name' is the name of the real variant analyzed read in the file '0-Variant_analyzed.txt' by the script 'RUN_CNN-ADNA.sh'. 
 
 	raw files of the CNN predictions of s and T
 	- /crossval/empirical_validation_pred_' + snp_name + '_' + name_model + '.txt' (same columns as described above, only true values are missing)
