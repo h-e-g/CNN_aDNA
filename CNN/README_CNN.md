@@ -55,7 +55,7 @@ name_model is the name of the CNN model defined by users in the setting file 'SE
 	column 14	"cnn_t_ICmax"	95% CI higher bound of T (from posterior distribution)
 
 
-2 - Ror emprical data.
+2 - For emprical data.
 Tabulated text file that stores the CNN predictions for the real datasets.
 snp_name is the name of the real variant analyzed read in the file '0-Variant_analyzed.txt' by the script 'RUN_CNN-ADNA.sh'
 
