@@ -127,6 +127,7 @@ if analyse == 'CUSTOM':
 	
 else:
 	### BY DEFAULT : file names and the nme of the CNN architectureused must be specified by user 
+	Nsim="476800" ; Ntraining=476700 ; Nvalid=100 ; Ncross=200; Nsim_crossval=Nsim
 	file_sim_image   =file_location + My_file_sim_image
 	file_sim_param   =file_location + My_file_sim_param
 	
@@ -430,4 +431,5 @@ else:
 print("\n")
 print ('Ending CNN-aDNA');
 print("\n")
+
 
